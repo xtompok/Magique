@@ -84,7 +84,9 @@ int nrf_receive(unsigned char *data, unsigned char len) {
 	nrf_csh();
 
 	if (!(_nrf_status & RX_DR)) return 0;
-	/* TODO: Clear bit? */
+
+	/* Clear RX_DR, this is actually done by writing RX_DR */
+	nrf_reg_write(NRF_REG_STATUS, RX_DR, 1);
 
 	/* Read data */
 	nrf_csl();
@@ -92,35 +94,40 @@ int nrf_receive(unsigned char *data, unsigned char len) {
 	for (int i = 0; i < len; i++) {
 		data[i] = spi_xfer_byte(NRF_CMD_NOP);
 	}
-
-	/* Clear RX_DR */
-	nrf_reg_write(NRF_REG_STATUS, _nrf_status & (~RX_DR), 1);
+	nrf_csh();
 
 	/* I may want to return pipe number in the future */
 	return 1;
 }
 
+/* Note: CE draws some 80uA even in powerdown mode, so the CE pin shall be input
+ * if NRF is powered down. */
+
 void nrf_init() {
 	delay_ms(20); /* 10.3ms should be enough */
-	NRF_PDIR |= NRF_CS + NRF_CE;
-	NRF_POUT &= NRF_CE;
-	nrf_csh();
-	nrf_powerup();
-}
+	NRF_PDIR |= NRF_CS;
 
-void nrf_powerup() {
-	int config = nrf_reg_read(NRF_REG_CONFIG, 1);
-	nrf_reg_write(NRF_REG_CONFIG, config | PWR_UP | CRCO, 1);
-	delay_ms(2); /* 1.5ms should be enough */
+	nrf_csh();
+	nrf_cel();
 }
 
 void nrf_powerup_nodelay() {
+	nrf_cel();
+	NRF_PDIR |= NRF_CE;
 	int config = nrf_reg_read(NRF_REG_CONFIG, 1);
 	nrf_reg_write(NRF_REG_CONFIG, config | PWR_UP | CRCO, 1);
+}
+
+void nrf_powerup() {
+	nrf_powerup_nodelay();
+	delay_ms(2); /* 1.5ms should be enough */
 }
 
 void nrf_powerdown() {
 	nrf_reg_write(NRF_REG_CONFIG, 0, 1);
+	nrf_csl();
+	nrf_cel();
+	NRF_PDIR &= ~NRF_CE;
 }
 
 void _nrf_setrx(unsigned char prx) {
