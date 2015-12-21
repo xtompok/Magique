@@ -18,6 +18,14 @@ void adc_init() {
 	ADC10CTL1 = ADC10DIV_7 + ADC10SSEL_3;
 }
 
+void adc_off() {
+	ADC10CTL0 &= ~REFON;
+}
+
+void adc_on() {
+	ADC10CTL0 |= REFON;
+}
+
 unsigned int adc_read(unsigned int channel) {
 	ADC10CTL1 &= 0xfff;
 	ADC10CTL1 |= channel << 12;

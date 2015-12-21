@@ -13,5 +13,7 @@
 void adc_init();
 unsigned int adc_read(unsigned int channel);
 unsigned int adc_rand(unsigned int bits);
+void adc_on(void);
+void adc_off(void);
 
 #endif

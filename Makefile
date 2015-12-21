@@ -1,6 +1,6 @@
 CC=msp430-gcc
 #CPU=2553
-CPU_MAGI=-mmcu=msp430g2352
+CPU_MAGI=-mmcu=msp430g2553
 CPU_USBIF=-mmcu=msp430g2553
 MYVAL:=0x11111111
 MYNAME:=0x80
@@ -8,7 +8,7 @@ CFLAGS=-std=c99 -Os -Wall -g $(CPU_MAGI) -Ilib -I. -DHWDEBUG=1 -DZONE=$(ZONE) -D
 #CFLAGS=-std=c99 -Os -Wall -g $(CPU_MAGI) -Ilib -I. -DHWDEBUG=1
 #CFLAGS=-std=c99 -Os -Wall -g $(CPU_USBIF) -Ilib -I. -DHWDEBUG=1 -DSWDEBUG=1 -DMYNAME=0 -D MYVAL=0
 
-OBJS=lib/nrf.o lib/sr.o lib/delay.o lib/segment.o lib/spi.o lib/beep.o globals.o lib/adc.o radiation.o
+OBJS=lib/nrf.o lib/sr.o lib/delay.o lib/segment.o lib/spi.o lib/beep.o globals.o lib/adc.o radiation.o persistent.o network.o
 
 magique.elf: $(OBJS) magique.o
 	$(CC) $(CFLAGS) -o $@ magique.o $(OBJS)
