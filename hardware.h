@@ -63,7 +63,4 @@
 /* Button */
 #define BUTTON_PIN BIT2 
 
-/* Radio channel used */
-#define RF_CH 122
-
 #endif

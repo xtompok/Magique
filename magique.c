@@ -19,6 +19,7 @@
 #include "globals.h"
 #include "beep.h"
 #include "radiation.h"
+#include "network.h"
 
 static volatile int second = 0;
 volatile unsigned char jiffies = 0;
