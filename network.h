@@ -32,6 +32,8 @@ struct packet {
 #define RF_SETUP (RF_PWR0 | RF_PWR1)
 
 
+/* Initialized NRF for network communication. */
+void network_init();
 
 
 #endif

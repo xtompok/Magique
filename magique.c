@@ -18,7 +18,6 @@
 #include "music.h"
 #include "globals.h"
 #include "beep.h"
-#include "radiation.h"
 #include "network.h"
 
 static volatile int second = 0;
@@ -45,21 +44,19 @@ volatile unsigned int countdown = 0;
 
 unsigned char _digits = 0;
 
+/* Change current digit multiplex */
 void mplex() {
-	if (flags & FL_DISPLAY) {
-		show_digit(_digits & 0xf, 0);
-		if (counter_select)
-			_sr_conf &= ~DOT;
-		else _sr_conf |= DOT;
-		sr_update();
-		delay_us(1000);
-		show_digit((_digits & 0xf0) >> 4, 1);
-		sr_update();
-		delay_us(1000);
-	} else {
-		LPM3;
-		//delay_ms(2);
-	}
+	/* Show first digit */
+	show_digit(_digits & 0xf, 0);
+	sr_update();
+	delay_us(1000);
+
+	/* Show second digit */
+	show_digit((_digits & 0xf0) >> 4, 1);
+	sr_update();
+	delay_us(1000);
+
+	/* Clear display */
 	show_digit(0, 2);
 	sr_update(0);
 }
@@ -70,29 +67,25 @@ unsigned int rand() {
 
 }
 
-int main() {
+void magique_hw_init(void) {
+	/* This function initializes all the hardware IO/peripherals */
 	BCSCTL1 = CALBC1_8MHZ;
 	DCOCTL = CALDCO_8MHZ;
+
 	/* Set ACL to VLO */
 	BCSCTL3 = LFXT1S1;
-	/* Set clock to MCLK/32768 ~ 244 ticks per second with 8MHz clock */
-	// WDTCTL = WDTPW + WDTTMSEL; 
+
 	/* Set clock to ACLK/64 ~ 187 ticks per second with 12kHz clock */
-	WDTCTL = WDTPW + WDTTMSEL + WDTIS0 + WDTIS1 + WDTSSEL; 
+	WDTCTL = WDTPW + WDTTMSEL + WDTIS0 + WDTIS1 + WDTSSEL;
 	IE1 |= WDTIE;
 
-	/* Initialize ADC as soon as possible, dies if battery is low. */
-	//adc_init();
-	//if (message[MSG_BAT] < 0x8f) {
-	
 	/* Using XIN/XOUT as I/O */
 	P2SEL &= ~(BIT6 + BIT7);
 
-	/* Setup timer for 10ms */
-	TACTL |= TASSEL1 | ID0 | ID1 | MC0;
+	/* Setup timer for 10ms; initially off. Add MC0 to start it up. */
+	TACTL |= TASSEL1 | ID0 | ID1;
 	TACCTL0 = CCIE;
 	TACCR0 = 0xff;
-
 
 #ifdef HWDEBUG
 	P1DIR |= BIT0;
@@ -102,11 +95,6 @@ int main() {
 	/* Setup SR ports */
 	P2DIR |= SR_DATA | SR_CLEAR | SR_CLK | SR_LATCH;
 	P2OUT &= ~(SR_DATA | SR_CLEAR | SR_CLK | SR_LATCH);
-	
-	/* Configure libraries */
-	spi_init();
-	nrf_init();
-	adc_init();
 
 	/* Setup button on P2.2, internal pull-up. */
 	P2DIR &= ~BIT2; /* Input */
@@ -114,58 +102,67 @@ int main() {
 	P2OUT |= BIT2;	/* Set to pull-up */
 	P2IE  |= BIT2;	/* Enable interrupts */
 	P2IES |= BIT2;	/* Select high-to-low edge */
-	/* TODO: adc_init() breaks those ^^. Why? */
-	
 
-	/* Configure as receiver */
-	nrf_reg_write(NRF_REG_CONFIG, EN_CRC | PWR_UP | PRIM_RX | CRCO, 1);
-	nrf_reg_write(NRF_REG_EN_AA, 0, 1); /* Disable Auto Acknowledgment */
-	nrf_reg_write(NRF_REG_RF_CH, RF_CH, 1);
-	nrf_reg_write(NRF_REG_RX_PW_P0, MSG_LENGTH, 1);
-	//nrf_reg_write(NRF_REG_RX_PW_P0, 1, 1);
-	//nrf_reg_write(NRF_REG_EN_RXADDR, ERX_P0 | ERX_P1, 1);
 	eint();
+}
 
+void magique_self_test(void) {
 	sr_led(SR_O_YELLOW | SR_O_GREEN | SR_O_RED, 0);
 #ifdef HWDEBUG
 	for (int i = 0; i < 16; i++) {
 		_sr_conf = ~(1<< i);
 		sr_update();
 		/*beep(1000, 10, 0); */
-		delay_ms(100);
+		delay_ms(200);
 	}
 #endif
 	sr_led(SR_O_YELLOW | SR_O_GREEN | SR_O_RED, 0);
-	sr_led(SR_O_GREEN, 1);
 	sr_update();
+}
 
-	delay_ms(1000);
+int main() {
+	/* Setup clock, timers, interrupts and IOs */
+	magique_hw_init();
 
-	if ((adc_read(0xb) >> 2) > 0x8f) {
-		rad_store(0); /* This is backup restore */
-	} else {
-		/* Light red led and power off. */
+	/* Configure libraries */
+	spi_init();
+	adc_init();
+	nrf_init();
+
+	/* Setup network communication pipelines, frequencies & stuff */
+	network_init();
+
+	magique_self_test();
+
+	//delay_ms(1000);
+
+#if 0
+	if ((adc_read(0xb) >> 2) < 0x8f) {
+		/* Battery is low; Flash with red LED once and power down. */
+		sr_led(SR_O_YELLOW | SR_O_GREEN | SR_O_RED, 0);
 		sr_led(SR_O_RED, 1);
-		sr_led(SR_O_GREEN, 0);
+		sr_update();
+		delay_ms(500);
+		sr_led(SR_O_YELLOW | SR_O_GREEN | SR_O_RED, 0);
 		sr_update();
 		nrf_powerdown();
-		LPM4;
+		LPM4; /* In LPM4, all clocks are off, we won't wake up. */
 	}
+#endif
 
-	/* Setup speaker. This is done intentionally after the power check to prevent buzzing on low power. */
-	P2DIR |= BIT6;
-
+	/* Beep, signaling we're ready and entering the control loop */
 	beep(1000, 10, 0);
-	
-	
-	
-	//flags |= FL_DISPLAY;
-	//countdown = 500;
 
 	/* Main control loop */
 	digits = 0x7a;
 	unsigned char jiffies_led[3] = {0,0,0};
 	for (;;) {
+		/* Go to sleep mode, if no events are planned and no flags raised */
+		if (!(flags || evlist)) {
+			LPM3;
+			continue;
+		}
+
 		/* Handle LED blinking */
 		if (evlist & EV_RED_BLINK) {
 			sr_led(SR_O_RED, 1);
@@ -193,156 +190,22 @@ int main() {
 				}
 			}
 		}
-		sr_update();
 
-		/* Handle listening */
-		/* if (evlist & EV_LISTEN) {
-			nrf_nolisten();
-			evlist &= ~EV_LISTEN;
-			msg_receive();
-		} */
-		
 		/* Handle short polling. */
 		if (evlist & EV_SHORT_POLL) {
 			evlist &= ~EV_SHORT_POLL;
-			nrf_powerup();
-			nrf_listen();
-			mplex();
-			nrf_nolisten();
-			msg_receive();
-			nrf_powerdown();
-			evlist |= EV_LISTEN;
-			/* Some approximation of dosage */
-			unsigned char zone_shift = 0;
-			unsigned int zone_incr = 1;
-			if (rad_zone > 7) {
-				zone_shift = 7;
-				zone_incr = rad_zone - 7 + 1 + 4;
-			} else
-				zone_shift = rad_zone;
-			if ((rad_zone) && (rand() < (1 << (zone_shift+8)))) {
-				zone_incr = (0x1 << zone_incr);
-				if (((rad + zone_incr) ^ rad) & 0xff000 ){
-					flags |= FL_DISPLAY;
-					countdown = 1000;
-				}
-				rad += zone_incr;
-				if (rad > 0xff000) rad = 0x0ff000;
-				rad_zone--;
-				evlist |= EV_YELLOW_BLINK;
-				if (counter_select)
-					beep(500, 10, 0);
-			}
-			if ((rad >> 20) > 0) rad = 0xffffffff;	/* When this happens, people die.. */
+			/* TODO: Insert magique stuff here */
 		}
 
-		/* Handle long polling. */
+		/* Handle long polling. Expensive network communication can be done here. */
 		if (evlist & EV_LONG_POLL) {
 			evlist &= ~EV_LONG_POLL;
-			message[MSG_BAT] = adc_read(0xb) >> 2;
-			/* If voltage is below 2.8V */
-			if (message[MSG_BAT] < 0x8f) {
-				/* TODO: blink */
-				evlist |= EV_RED_BLINK;
-			} else {
-				/* Store if data differs significantly. This is to prevent flash wearoff. */
-				unsigned char d = (rad_zone > 0) ? (rad_zone * 15) : 5;
-				if ((rad - rad_get()) > d)
-					rad_store(rad);
-			}
-
-			message[MSG_FROM] = MYNAME;
-			message[MSG_COUNTER4] = rad & 0xff;
-			message[MSG_COUNTER3] = (rad & 0xff00) >> 8;
-			message[MSG_COUNTER2] = (rad & 0xff0000) >> 16;
-			message[MSG_COUNTER1] = (rad & 0xff000000) >> 24;
-			message[MSG_RESERVED] = counter_select;
-
-			nrf_settx();
-			msg_beacon();
-			nrf_setrx();
 		}
 
-		/* Simple button presses */
-		if (flags & FL_BUTTON) {
-			switch (mode) {
-				case MODE_TIMESUP:
-					countdown = 30*JS;
-					flags &= ~FL_BUTTON;
-					break;
-			}
-		}
-			
-		mplex();
-
-#if 0
-		/* 
-		 * Delayed button presses for cases when long and short 
-		 * press needs to be differentiated 
-		 */
-		if ((flags & FL_BUTTON) && (jiffies - button_sample <= 5)) {
-			/* Button is pressed when P2IN & BUTTON_PIN == 0 */
-			#define LONG_PRESSED (!(P2IN & BUTTON_PIN))
-			#define SHORT_PRESSED (P2IN & BUTTON_PIN)
-			switch (mode) {
-				case MODE_DEFAULT:
-					button_code <<= 1;
-					if (LONG_PRESSED) {
-						button_code |= 1;
-					}
-					if ((button_code & 0x7) == 0b1011) {
-						play(MUSIC_SUCCESS);
-						digits = mode = mode_next = MODE_SELECT;
-					}
-					break;
-				case MODE_SELECT:
-					if (LONG_PRESSED) {
-						mode = mode_next;
-					} else
-						mode_next++;
-					break;
-				case MODE_IMPERIAL:
-					if (LONG_PRESSED) {
-						play(MUSIC_IMPERIAL);
-					}
-					mode = MODE_DEFAULT;
-					break;
-			}
-			flags &= ~FL_BUTTON;
-		}
-#endif
-
-		/* Multiplex data, this is done inline and does take at most 3ms */
-		if ((flags & FL_DISPLAY) || (mode == MODE_TIMESUP) || (mode == MODE_SELECT)) { 
-			_digits = digits;
-			switch (mode) {
-				case MODE_DEFAULT:
-					_digits = (rad & 0x0ff000) >> 12;
-					break;
-				case MODE_SELECT:
-					_digits = mode_next;
-					break;
-#if 0
-				case MODE_TIMESUP:
-					_digits = countdown / JS;
-					_digits = (_digits%10) | (_digits / 10 << 4);
-					if (countdown == 1) {
-						play(MUSIC_FAILURE);
-						countdown = 0;
-					}
-					if (countdown == 0)
-						goto relax;
-					break;
-#endif
-			}
-			//mplex();
-		} else { 
-			//LPM3; 
-			_BIS_SR(LPM3_bits + GIE);
-		}
-
-		/* TODO: Powersaving via LPM3, could use VLOCLK here. */
-		relax:;
+		if (flags & FL_DISPLAY) 
+			mplex();
+		else
+			sr_update();
 	}
 
 }
@@ -360,20 +223,24 @@ interrupt(WDT_VECTOR) WDT_ISR(void) {
 	if (jiffies == 120) evlist |= EV_RED_BLINK;
 	#endif
 
-	/* Short polling every ~18ms */
-	//if (jiffies % 2 == 0)
+	/* Short polling every once in a while */
+	if ((jiffies & 0x0f) == 0)
 		evlist |= EV_SHORT_POLL;
 
 	/* Long polling every second or two */
 	if (jiffies == 132) evlist |= EV_LONG_POLL;
 
 	if (countdown == 1) flags &= ~FL_DISPLAY;
+
+	//sr_update();
 	LPM3_EXIT;
 }
 
 interrupt(TIMER0_A0_VECTOR) TIMER0_ISR(void) {
-	if (flags & FL_BEEP) SPK_OUT ^= SPK;
-	rng++;
+	/* TACCR0 overflowed is reserved for the buzzer */
+	//if (TAIV & TA0IV_TAIFG) {
+		if (flags & FL_BEEP) SPK_OUT ^= SPK;
+//	}
 }
 
 interrupt(PORT2_VECTOR) PORT2_ISR(void) {

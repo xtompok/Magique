@@ -8,7 +8,7 @@ CFLAGS=-std=c99 -Os -Wall -g $(CPU_MAGI) -Ilib -I. -DHWDEBUG=1 -DZONE=$(ZONE) -D
 #CFLAGS=-std=c99 -Os -Wall -g $(CPU_MAGI) -Ilib -I. -DHWDEBUG=1
 #CFLAGS=-std=c99 -Os -Wall -g $(CPU_USBIF) -Ilib -I. -DHWDEBUG=1 -DSWDEBUG=1 -DMYNAME=0 -D MYVAL=0
 
-OBJS=lib/nrf.o lib/sr.o lib/delay.o lib/segment.o lib/spi.o lib/beep.o globals.o lib/adc.o radiation.o
+OBJS=lib/nrf.o lib/sr.o lib/delay.o lib/segment.o lib/spi.o lib/beep.o globals.o lib/adc.o network.o
 
 magique.elf: $(OBJS) magique.o
 	$(CC) $(CFLAGS) -o $@ magique.o $(OBJS)
@@ -16,7 +16,7 @@ magique.elf: $(OBJS) magique.o
 emitter.elf: $(OBJS) emitter.o
 	$(CC) $(CFLAGS) -o $@ emitter.o $(OBJS)
 
-all: usbif.elf magique.elf
+all: magique.elf
 
 usbif.elf: $(OBJS) usbif.o lib/uart.o
 	$(CC) $(CFLAGS) -o $@ usbif.o $(OBJS) lib/uart.o

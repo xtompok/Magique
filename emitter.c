@@ -12,7 +12,6 @@
 #include "delay.h"
 #include "nrf.h"
 #include "spi.h"
-#include "radiation.h"
 #include "network.h"
 
 int main() {

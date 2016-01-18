@@ -14,14 +14,21 @@
 #include "delay.h"
 
 void beep(int freq, int length, int pause) {
-	//WDTCTL = WDTPW + WDTHOLD;
+	/* Setup SPK as output, enable TACTL */
+	SPK_DIR |= SPK;
+	TACTL |= MC0;
+
+	/* Start beeping */
 	flags |= FL_BEEP;
 	TACCR0 = freq/8;
 	delay_ms(length);
 	flags ^= FL_BEEP;
+
+	/* Quit beeping, change SPK back to input and disable counter */
 	SPK_OUT &= ~SPK;
-	//WDTCTL = WDTPW + WDTTMSEL + WDTIS0; /* SMCLK/8192 */
-	//WDTCTL = WDTPW + WDTTMSEL; /* SMCLK/32768 */
+	SPK_DIR &= ~SPK;
+	TACTL &= ~MC0;
+
 	delay_ms(pause);
 }
 

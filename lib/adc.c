@@ -14,11 +14,12 @@
 
 void adc_init() {
 	/* ADC Mode: Vref to GND, 64 clock sample, 2.5V internal reference */
-	ADC10CTL0 = SREF_1 + ADC10SHT_3 + REF2_5V + REFON + ADC10ON;
+	ADC10CTL0 = SREF_1 + ADC10SHT_3 + REF2_5V + ADC10ON;
 	ADC10CTL1 = ADC10DIV_7 + ADC10SSEL_3;
 }
 
 unsigned int adc_read(unsigned int channel) {
+	ADC10CTL0 |= REFON;
 	ADC10CTL1 &= 0xfff;
 	ADC10CTL1 |= channel << 12;
 	delay_us(30); /* TODO: is it needed? */
@@ -26,5 +27,6 @@ unsigned int adc_read(unsigned int channel) {
 
 	while (!(ADC10CTL0 & ADC10IFG));
 	ADC10CTL0 &= ~(ADC10IFG + ENC);
+	ADC10CTL0 &= ~REFON;
 	return ADC10MEM;
 }

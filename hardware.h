@@ -43,6 +43,7 @@
 
 /* Speaker */
 #define SPK_OUT P2OUT
+#define SPK_DIR P2DIR
 #define SPK BIT6
 
 /* NRF ports */

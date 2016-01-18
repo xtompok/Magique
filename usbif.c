@@ -13,7 +13,6 @@
 #include "nrf.h"
 #include "uart.h"
 #include "spi.h"
-#include "radiation.h"
 #include "network.h"
 
 int main() {
