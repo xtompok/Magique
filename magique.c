@@ -130,7 +130,7 @@ int main() {
 	nrf_init();
 
 	/* Setup network communication pipelines, frequencies & stuff */
-	network_init();
+	network_init( RF_ROLE_TX );
 
 	magique_self_test();
 
