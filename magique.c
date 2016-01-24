@@ -18,6 +18,7 @@
 #include "globals.h"
 #include "beep.h"
 #include "network.h"
+#include "magique.h"
 
 static volatile int second = 0;
 volatile unsigned char jiffies = 0;
@@ -30,6 +31,7 @@ volatile unsigned char button_sample = 0;
 unsigned char button_code = 0;
 unsigned char rng = 0;
 
+struct node my_info;
 
 /* Operation mode */
 unsigned char mode = 0;
