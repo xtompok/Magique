@@ -140,6 +140,16 @@
 			<type>1</type>
 			<locationURI>copy_PARENT/lib/sr.h</locationURI>
 		</link>
+		<link>
+			<name>lib/uart.c</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/lib/uart.c</locationURI>
+		</link>
+		<link>
+			<name>lib/uart.h</name>
+			<type>1</type>
+			<locationURI>PARENT-1-PROJECT_LOC/lib/uart.h</locationURI>
+		</link>
 	</linkedResources>
 	<variableList>
 		<variable>

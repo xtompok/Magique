@@ -6,3 +6,5 @@
 /ccs-base/lnk_msp430g2352.cmd
 /ccs-base/targetConfigs/MSP430G2352.ccxml
 /ccs-base/targetConfigs/readme.txt
+/ccs-base/lnk_msp430g2553.cmd
+/ccs-base/targetConfigs/MSP430G2553.ccxml
