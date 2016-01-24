@@ -23,9 +23,9 @@
 #define SR_LATCH BIT5
 
 /* Shift register peripherals */
-#define SR_O_GREEN (1 << 13)
-#define SR_O_YELLOW (1 << 14)
-#define SR_O_RED (1 << 15)
+#define SR_O_GREEN (1U << 13)
+#define SR_O_YELLOW (1U << 14)
+#define SR_O_RED (1U << 15)
 
 /* Segments in registers */
 #define A (1 << 0)
