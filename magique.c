@@ -103,7 +103,7 @@ void magique_hw_init(void) {
 	P2IE  |= BIT2;	/* Enable interrupts */
 	P2IES |= BIT2;	/* Select high-to-low edge */
 
-	eint();
+	__enable_interrupt();
 }
 
 void magique_self_test(void) {
