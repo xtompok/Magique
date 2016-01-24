@@ -64,9 +64,11 @@ void nrf_transmit(unsigned char *data, unsigned char len) {
 	nrf_csh();
 
 	/* Transmit. */
+	__disable_interrupt();
 	nrf_ceh();
 	delay_us(10*len);
 	nrf_cel();
+	__enable_interrupt();
 }
 
 void nrf_listen() {

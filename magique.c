@@ -8,7 +8,6 @@
  ******************************************************************************/
 
 #include <msp430.h>
-#include <legacymsp430.h>
 #include "nrf.h"
 #include "spi.h"
 #include "sr.h"
@@ -210,7 +209,7 @@ int main() {
 
 }
 
-interrupt(WDT_VECTOR) WDT_ISR(void) {
+void __attribute__((interrupt(WDT_VECTOR))) WDT_ISR(void) {
 	P1OUT ^= 1;
 	//WDTCTL = WDTPW + WDTSSEL;
 	jiffies++;
@@ -236,14 +235,14 @@ interrupt(WDT_VECTOR) WDT_ISR(void) {
 	LPM3_EXIT;
 }
 
-interrupt(TIMER0_A0_VECTOR) TIMER0_ISR(void) {
+void __attribute((interrupt(TIMER0_A0_VECTOR))) TIMER0_ISR(void) {
 	/* TACCR0 overflowed is reserved for the buzzer */
 	//if (TAIV & TA0IV_TAIFG) {
 		if (flags & FL_BEEP) SPK_OUT ^= SPK;
 //	}
 }
 
-interrupt(PORT2_VECTOR) PORT2_ISR(void) {
+void __attribute((interrupt(PORT2_VECTOR))) PORT2_ISR(void) {
 	if (P2IFG & BIT2) {
 		//flags |= FL_DISPLAY | FL_BUTTON;
 		flags |= FL_DISPLAY;
