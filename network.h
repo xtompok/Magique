@@ -25,8 +25,12 @@ struct packet {
 	/*  8B */
 	uint16_t vcc;
 
+	/* Game data; 10B */
+	uint8_t attack;
+	uint8_t defense;
+
 	/* 32B */
-	uint8_t _pad[24];
+	uint8_t _pad[22];
 };
 
 #define RF_CH 122

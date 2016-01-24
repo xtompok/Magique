@@ -15,6 +15,7 @@ extern volatile unsigned char flags;
 #define FL_DISPLAY BIT0
 #define FL_BEEP BIT1
 #define FL_BUTTON BIT5
+#define FL_GAME_LISTEN BIT6
 
 /* Event queue */
 extern volatile unsigned char evlist;

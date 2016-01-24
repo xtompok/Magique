@@ -20,12 +20,13 @@
 #include "network.h"
 #include "magique.h"
 
+#include "modes/ktgame.h"
+
 static volatile int second = 0;
 volatile unsigned char jiffies = 0;
 
 #define JS (CLOCK/65536)
 
-unsigned char digits = 0;
 unsigned char lcdoff = 0;
 volatile unsigned char button_sample = 0;
 unsigned char button_code = 0;
@@ -154,8 +155,9 @@ int main() {
 	/* Beep, signaling we're ready and entering the control loop */
 	beep(1000, 10, 0);
 
+	_digits = 0;
+
 	/* Main control loop */
-	digits = 0x7a;
 	unsigned char jiffies_led[3] = {0,0,0};
 	for (;;) {
 		/* Go to sleep mode, if no events are planned and no flags raised */
@@ -168,17 +170,14 @@ int main() {
 		if (evlist & EV_RED_BLINK) {
 			sr_led(SR_O_RED, 1);
 			jiffies_led[0] = jiffies;
-			evlist &= ~EV_RED_BLINK;
 		}
 		if (evlist & EV_YELLOW_BLINK) {
 			sr_led(SR_O_YELLOW, 1);
 			jiffies_led[1] = jiffies;
-			evlist &= ~EV_YELLOW_BLINK;
 		}
 		if (evlist & EV_GREEN_BLINK) {
 			sr_led(SR_O_GREEN, 1);
 			jiffies_led[2] = jiffies;
-			evlist &= ~EV_GREEN_BLINK;
 		}
 		#define BLINK_TIME 8
 		for (unsigned int led = 0; led < 3; led++) {
@@ -192,16 +191,22 @@ int main() {
 			}
 		}
 
-		/* Handle short polling. */
+		/* Handle short polling (16 times per second). */
 		if (evlist & EV_SHORT_POLL) {
-			evlist &= ~EV_SHORT_POLL;
-			/* TODO: Insert magique stuff here */
 		}
 
-		/* Handle long polling. Expensive network communication can be done here. */
+		/* Handle long polling (once per second). */
 		if (evlist & EV_LONG_POLL) {
-			evlist &= ~EV_LONG_POLL;
 		}
+
+		switch (my_info.mode) {
+			case MODE_KTGAME:
+				ktgame_process();
+			default:;
+		}
+
+		/* All events _should_ have benn handled */
+		evlist = 0;
 
 		if (flags & FL_DISPLAY) 
 			mplex();

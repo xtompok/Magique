@@ -8,7 +8,7 @@ CFLAGS=-std=c99 -Os -Wall -g $(CPU_MAGI) -Ilib -I. -DHWDEBUG=1 -DZONE=$(ZONE) -D
 #CFLAGS=-std=c99 -Os -Wall -g $(CPU_MAGI) -Ilib -I. -DHWDEBUG=1
 #CFLAGS=-std=c99 -Os -Wall -g $(CPU_USBIF) -Ilib -I. -DHWDEBUG=1 -DSWDEBUG=1 -DMYNAME=0 -D MYVAL=0
 
-OBJS=lib/nrf.o lib/sr.o lib/delay.o lib/segment.o lib/spi.o lib/beep.o globals.o lib/adc.o network.o
+OBJS=lib/nrf.o lib/sr.o lib/delay.o lib/segment.o lib/spi.o lib/beep.o globals.o lib/adc.o network.o modes/ktgame.o
 
 magique.elf: $(OBJS) magique.o
 	$(CC) $(CFLAGS) -o $@ magique.o $(OBJS)
@@ -28,7 +28,7 @@ clean:
 	rm -fr *.elf $(OBJS) *.o
 
 size:
-	msp430-size *.elf
+	msp430-size *.o lib/*.o modes/*.o *.elf
 
 prog: magique.elf
 	mspdebug rf2500 "prog magique.elf"

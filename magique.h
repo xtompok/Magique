@@ -10,6 +10,8 @@
 #ifndef __MAGIQUE_H__
 #define __MAGIQUE_H__
 
+#include <stdint.h>
+
 /* Node specific data */
 struct node {
 	uint16_t id;
@@ -17,6 +19,8 @@ struct node {
 	uint16_t mana;
 	uint8_t  essences;
 };
+
+#define MODE_KTGAME 1
 
 #define ESSENCE_RED     (1 << 0)
 #define ESSENCE_YELLOW  (1 << 1)
