@@ -60,7 +60,7 @@ void nrf_transmit(unsigned char *data, unsigned char len) {
 	/* Send new data. */
 	nrf_csl();
 	_nrf_status = spi_xfer_byte(NRF_CMD_W_TX_PAYLOAD);
-	for (int i = 0; i < len; i++) spi_xfer_byte(data[i]);
+	for (unsigned int i = 0; i < len; i++) spi_xfer_byte(data[i]);
 	nrf_csh();
 
 	/* Transmit. */
@@ -93,7 +93,7 @@ int nrf_receive(unsigned char *data, unsigned char len) {
 	/* Read data */
 	nrf_csl();
 	_nrf_status = spi_xfer_byte(NRF_CMD_R_RX_PAYLOAD);
-	for (int i = 0; i < len; i++) {
+	for (unsigned int i = 0; i < len; i++) {
 		data[i] = spi_xfer_byte(NRF_CMD_NOP);
 	}
 	nrf_csh();

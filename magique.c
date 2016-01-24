@@ -181,7 +181,7 @@ int main() {
 			evlist &= ~EV_GREEN_BLINK;
 		}
 		#define BLINK_TIME 8
-		for (int led = 0; led < 3; led++) {
+		for (unsigned int led = 0; led < 3; led++) {
 			if (((jiffies - jiffies_led[led]) > BLINK_TIME) || ((jiffies_led[led] - jiffies) >= (255-BLINK_TIME))) {
 				switch (led) {
 					case 0: sr_led(SR_O_RED, 0); break;

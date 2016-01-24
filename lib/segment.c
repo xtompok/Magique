@@ -11,7 +11,7 @@
 #include "segment.h"
 
 /* Digit description. Corresponding output positions are defined in hardware.h */
-static unsigned int __digits[] = {
+static const unsigned int __digits[] = {
 	~(A + B + _C + D + E + F),
 	~(B + _C), 
 	~(A + B + G + E + D),

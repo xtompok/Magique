@@ -10,7 +10,7 @@
 #ifndef __SEGMENT_H__
 #define __SEGMENT_H__
 
-static unsigned int __digits[];
+static const unsigned int __digits[];
 
 void show_digit(unsigned char digit, char number);
 void clear_digit();
