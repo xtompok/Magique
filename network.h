@@ -34,7 +34,8 @@ struct packet {
 };
 
 #define RF_CH 122
-#define RF_SETUP (RF_PWR0 | RF_PWR1)
+#define RF_SETUP 0
+//(RF_PWR0 | RF_PWR1)
 #define RF_ROLE_TX 0
 #define RF_ROLE_RX PRIM_RX
 

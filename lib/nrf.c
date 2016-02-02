@@ -63,10 +63,11 @@ void nrf_transmit(unsigned char *data, unsigned char len) {
 	for (unsigned int i = 0; i < len; i++) spi_xfer_byte(data[i]);
 	nrf_csh();
 
-	/* Transmit. */
+	/* Transmit. Interrupts are disabled, since if we keep NRF in tx mode for
+	 * more than 4ms, it will self destruct. */
 	__disable_interrupt();
 	nrf_ceh();
-	delay_us(10*len);
+	delay_us(20); /* At least 10us required. */
 	nrf_cel();
 	__enable_interrupt();
 }
