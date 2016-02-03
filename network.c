@@ -10,6 +10,7 @@
 #include "network.h"
 #include "lib/nrf.h"
 #include "lib/delay.h"
+#include "magique.h"
 
 void network_init(uint8_t role) {
 	nrf_powerup();
@@ -21,6 +22,11 @@ void network_init(uint8_t role) {
 }
 
 void network_mkpacket(struct packet *p) {
+	uint8_t *a = (uint8_t *) p;
+	for (int i = sizeof(struct packet); i >= 0; i--)
+		a[i] = 0;
+	p->node_from = my_info.id;
+	p->node_to = 0x6666;
 
 }
 
@@ -38,7 +44,7 @@ uint8_t network_send(struct packet *p, uint8_t req_ack) {
 	/* TODO: Wake radio from sleep mode */
 	nrf_settx();
 	nrf_reg_write(NRF_REG_STATUS, MAX_RT | TX_DS, 1);
-	nrf_transmit((unsigned char *) &p, sizeof(struct packet));
+	nrf_transmit((unsigned char *) p, sizeof(struct packet));
 	uint8_t status = 0;
 	if (req_ack) {
 		/* TODO: timeout should never be reach, it's just to be on the safe side */
@@ -79,4 +85,19 @@ uint8_t network_rcv(struct packet *p, uint16_t timeout) {
 	}
 	nrf_nolisten();
 	return result; /* Result is 1 only if the last nrf_receive succeeded */
+}
+
+/* Asynchronous radio receive. Start receiving */
+void network_arcv_start(void) {
+	nrf_setrx();
+	nrf_listen();
+}
+
+/* Asynchronous radio receive. Stop receiving */
+void network_arcv_stop(void) {
+	nrf_nolisten();
+}
+
+uint8_t network_arcv(struct packet *p) {
+	return nrf_receive((unsigned char *) p, sizeof(struct packet));
 }

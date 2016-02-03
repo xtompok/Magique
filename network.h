@@ -29,11 +29,15 @@ struct packet {
 	uint8_t attack;
 	uint8_t defense;
 
+	/* Stones & sources; 12B */
+	int8_t mpm;	/* Mana per minute, shall only be emitted by the source and can be negative */
+	uint8_t ess; /* Essencess available, shall only be emitted by the source */
+
 	/* 32B */
-	uint8_t _pad[22];
+	uint8_t _pad[20];
 };
 
-#define RF_CH 122
+#define RF_CH 110
 #define RF_SETUP 0
 //(RF_PWR0 | RF_PWR1)
 #define RF_ROLE_TX 0
@@ -59,4 +63,9 @@ uint8_t network_send(struct packet *p, uint8_t req_ack);
  */
 uint8_t network_rcv(struct packet *p, uint16_t timeout);
 
+void network_arcv_start(void);
+void network_arcv_stop(void);
+uint8_t network_arcv(struct packet *p);
+
 #endif
+
