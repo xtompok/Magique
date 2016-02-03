@@ -1,15 +1,15 @@
 /******************************************************************************
- * Filename: globals.c
+ * Filename: magique_source.h
  *
- * Created: 2013/02/18 23:36
+ * Created: 2016/02/03 16:23
  * Author: Ladislav Láska
  * e-mail: laska@kam.mff.cuni.cz
  *
  ******************************************************************************/
 
+#ifndef __MAGIQUE_SOURCE_H__
+#define __MAGIQUE_SOURCE_H__
 
-volatile unsigned char flags = 0;
+void magique_source_process(void);
 
-volatile unsigned char evlist = 0;
-
-volatile unsigned char _digits = 0;
+#endif

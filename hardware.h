@@ -15,6 +15,18 @@
 /* SMCLK clock speed. */
 #define CLOCK 8000000
 
+#ifdef HW_BASE /* Provide alternative hardware description in case of a base station */
+
+/* NRF ports */
+#define NRF_POUT P2OUT
+#define NRF_PDIR P2DIR
+#define NRF_PREN P2REN
+#define NRF_CE BIT2
+#define NRF_CS BIT0
+#define NRF_IRQ BIT1
+
+#else /* HW_BASE not defined, hardware is standard dozimeter */
+
 /* Shift register ports */
 #define SR_OUT P2OUT
 #define SR_DATA BIT7
@@ -63,5 +75,7 @@
 
 /* Button */
 #define BUTTON_PIN BIT2 
+
+#endif /* HW_BASE */
 
 #endif

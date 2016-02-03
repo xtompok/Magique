@@ -21,6 +21,8 @@
 #include "magique.h"
 
 #include "modes/ktgame.h"
+#include "modes/magique_source.h"
+#include "modes/magique_stone.h"
 
 static volatile int second = 0;
 volatile unsigned char jiffies = 0;
@@ -44,7 +46,6 @@ unsigned char mode_next = 0;
 
 volatile unsigned int countdown = 0;
 
-unsigned char _digits = 0;
 
 /* Change current digit multiplex */
 void mplex() {
@@ -157,6 +158,22 @@ int main() {
 
 	_digits = 0;
 
+	/* DEBUG: set mode */
+	//my_info.mode = MODE_MAGIQUE_SOURCE;
+#if MY_MODE
+	my_info.mode = MY_MODE;
+#else
+	my_info.mode = MODE_MAGIQUE_SOURCE;
+#endif
+
+	my_info.id = MY_ID;
+
+	/* Show mode for some time */
+	_digits = my_info.mode;
+	flags |= FL_DISPLAY;
+	countdown = 1000;
+
+
 	/* Main control loop */
 	unsigned char jiffies_led[3] = {0,0,0};
 	for (;;) {
@@ -164,6 +181,19 @@ int main() {
 		if (!(flags || evlist)) {
 			LPM3;
 			continue;
+		}
+
+		switch (my_info.mode) {
+			case MODE_KTGAME:
+				ktgame_process();
+				break;
+			case MODE_MAGIQUE_SOURCE:
+				magique_source_process();
+				break;
+			case MODE_MAGIQUE_STONE:
+				magique_stone_process();
+				break;
+			default:;
 		}
 
 		/* Handle LED blinking */
@@ -199,13 +229,7 @@ int main() {
 		if (evlist & EV_LONG_POLL) {
 		}
 
-		switch (my_info.mode) {
-			case MODE_KTGAME:
-				ktgame_process();
-			default:;
-		}
-
-		/* All events _should_ have benn handled */
+		/* All events _should_ have been handled */
 		evlist = 0;
 
 		if (flags & FL_DISPLAY) 

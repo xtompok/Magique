@@ -56,7 +56,7 @@ void uart_putib(unsigned int num, int l) {
 	}
 }
 
-interrupt(USCIAB0RX_VECTOR) USCI0RX_ISR(void)
+void __attribute__((interrupt(USCIAB0RX_VECTOR))) USCI0RX_ISR(void)
 {
 	if(uart_rx_fn != 0L) {
 		(uart_rx_fn)(UCA0RXBUF);

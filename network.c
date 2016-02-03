@@ -18,7 +18,7 @@ void network_init(uint8_t role) {
 	nrf_reg_write(NRF_REG_CONFIG, EN_CRC | PWR_UP | (role & PRIM_RX) | CRCO, 1);
 	nrf_reg_write(NRF_REG_RF_CH, RF_CH, 1);
 	nrf_reg_write(NRF_REG_RX_PW_P0, sizeof(struct packet), 1);
-	nrf_reg_write(NRF_REG_RF_SETUP, RF_SETUP, 1);
+	//nrf_reg_write(NRF_REG_RF_SETUP, RF_SETUP, 1);
 }
 
 void network_mkpacket(struct packet *p) {
@@ -27,7 +27,6 @@ void network_mkpacket(struct packet *p) {
 		a[i] = 0;
 	p->node_from = my_info.id;
 	p->node_to = 0x6666;
-
 }
 
 /* Attempt to send a packet. Waits for ACK if req_ack is non-zero
@@ -42,6 +41,7 @@ void network_mkpacket(struct packet *p) {
  * */
 uint8_t network_send(struct packet *p, uint8_t req_ack) {
 	/* TODO: Wake radio from sleep mode */
+	nrf_nolisten();
 	nrf_settx();
 	nrf_reg_write(NRF_REG_STATUS, MAX_RT | TX_DS, 1);
 	nrf_transmit((unsigned char *) p, sizeof(struct packet));
@@ -101,3 +101,4 @@ void network_arcv_stop(void) {
 uint8_t network_arcv(struct packet *p) {
 	return nrf_receive((unsigned char *) p, sizeof(struct packet));
 }
+

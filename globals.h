@@ -26,4 +26,6 @@ extern volatile unsigned char evlist;
 #define EV_LONG_POLL BIT4
 #define EV_LISTEN BIT6
 
+extern volatile unsigned char _digits;
+
 #endif
