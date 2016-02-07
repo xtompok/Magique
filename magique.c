@@ -124,8 +124,6 @@ void magique_self_test(void) {
 }
 
 int main() {
-	my_info.mana = 100;
-
 	/* Setup clock, timers, interrupts and IOs */
 	magique_hw_init();
 
@@ -170,11 +168,15 @@ int main() {
 
 	my_info.id = MY_ID;
 
+	/* Initialize game */
+	if (my_info.mode == MODE_KTGAME) {
+		ktgame_init();
+	}
+
 	/* Show mode for some time */
 	_digits = my_info.mode;
 	flags |= FL_DISPLAY;
 	countdown = 1000;
-
 
 	/* Main control loop */
 	unsigned char jiffies_led[3] = {0,0,0};
@@ -282,8 +284,8 @@ void __attribute((interrupt(TIMER0_A0_VECTOR))) TIMER0_ISR(void) {
 
 void __attribute((interrupt(PORT2_VECTOR))) PORT2_ISR(void) {
 	if (P2IFG & BIT2) {
-		//flags |= FL_DISPLAY | FL_BUTTON;
-		flags |= FL_DISPLAY;
+		flags |= FL_DISPLAY | FL_BUTTON;
+		//flags |= FL_DISPLAY;
 		countdown = 1000;
 		//button_sample = jiffies+200;
 		P2IFG &= ~BIT2;

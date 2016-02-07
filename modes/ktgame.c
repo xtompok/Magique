@@ -8,11 +8,13 @@
  ******************************************************************************/
 
 #include <msp430.h>
+#include "ktgame.h"
 #include "magique.h"
 #include "globals.h"
 #include "network.h"
 
 struct game_info {
+	uint8_t display_mode;
 	uint8_t listen_period;
 	uint8_t seen[8];
 	uint16_t attack;
@@ -26,40 +28,49 @@ struct game_info my_gi;
 
 uint8_t my_attack(void) {
 	switch (my_info.id & 0xf) {
-		case 1: /* Nacelnik TODO: +Pocet spoluhracu */
-			return 1 + my_gi.last_teammates;
-		case 2: /* Strazce vlajky */
+	case 1: /* Nacelnik TODO: +Pocet spoluhracu */
+		return 1 + my_gi.last_teammates;
+	case 2: /* Strazce vlajky */
+		return 5;
+	case 3: /* Balvan */
+		return 1;
+	case 4: /* Samotar */
+		if (my_gi.last_teammates == 0) {
 			return 5;
-		case 3: /* Balvan */
+		} else {
 			return 1;
-		case 4: /* Samotar */
-			if (my_gi.last_teammates == 0) {
-				return 5;
-			} else {
-				return 1;
-			}
-		default: /* Pesak */
-			return 1;
+		}
+	default: /* Pesak */
+		return 1;
 	}
 }
 
 uint8_t my_defence(void) {
 	switch (my_info.id & 0xf) {
-		case 1: /* Nacelnik TODO: +Pocet spoluhracu */
-			return 1 + my_gi.last_teammates;
-		case 2: /* Strazce vlajky */
-			return 0;
-		case 3: /* Balvan */
+	case 1: /* Nacelnik TODO: +Pocet spoluhracu */
+		return 1 + my_gi.last_teammates;
+	case 2: /* Strazce vlajky */
+		return 0;
+	case 3: /* Balvan */
+		if (my_gi.last_teammates == 0){
 			return 10;
-		case 4: /* Samotar */
-			if (my_gi.last_teammates == 0) {
-				return 5;
-			} else {
-				return 1;
-			}
-		default: /* Pesak */
+		} else {
 			return 1;
+		}
+	case 4: /* Samotar */
+		if (my_gi.last_teammates == 0) {
+			return 5;
+		} else {
+			return 1;
+		}
+	default: /* Pesak */
+		return 1;
 	}
+}
+
+void ktgame_init(void){
+	my_info.mana = 200;
+	my_gi.display_mode = DISP_MANA;
 }
 
 void initialize_my_gi(void) {
@@ -74,6 +85,32 @@ void initialize_my_gi(void) {
 	}
 }
 
+void display_node_status(void) {
+	switch(my_gi.display_mode) {
+	case DISP_MANA:
+		if (my_gi.listen_period == 0) _digits = my_info.mana;
+#ifndef NETDEBUG
+		evlist |= EV_GREEN_BLINK;
+#endif
+		break;
+	case DISP_DEFENSE:
+		if (my_gi.listen_period == 0) _digits = my_gi.defense;
+#ifndef NETDEBUG
+		evlist |= EV_YELLOW_BLINK;
+#endif
+		break;
+	case DISP_ATTACK:
+		if (my_gi.listen_period == 0) _digits = my_gi.attack;
+#ifndef NETDEBUG
+		evlist |= EV_RED_BLINK;
+#endif
+		break;
+	default:
+		if (my_gi.listen_period == 0) _digits = my_info.mana;
+		break;
+	}
+}
+
 void ktgame_process(void) {
 	/* Handle short polling (16 times per second). */
 	if (evlist & EV_SHORT_POLL) {
@@ -81,7 +118,9 @@ void ktgame_process(void) {
 		/* TODO: Insert magique stuff here */
 
 		if (my_info.mana > 0) {
+#ifdef NETDEBUG
 			evlist |= EV_YELLOW_BLINK;
+#endif
 			network_mkpacket(&pk_out);
 			pk_out.attack = my_attack();
 			pk_out.defense = my_defence();
@@ -103,7 +142,9 @@ void ktgame_process(void) {
 
 	if (flags & FL_GAME_LISTEN) {
 		while (network_arcv(&pk_in)) {
+#ifdef NETDEBUG
 			evlist |= EV_GREEN_BLINK;
+#endif
 			uint8_t _bop_index = pk_in.node_from & 0x7;
 			uint8_t _bop_bit = 1 << ((pk_in.node_from & 0xf8) >> 3);
 			if (!(my_gi.seen[_bop_index] & _bop_bit)) {
@@ -127,18 +168,27 @@ void ktgame_process(void) {
 			network_arcv_stop();
 
 			/* TODO: Evaluate round */
-			if (my_gi.attack > my_gi.defense) {
+			if (my_gi.mpm > 0) {
+				my_info.mana += my_gi.mpm;
+			} else if (my_gi.attack > my_gi.defense) {
 				uint16_t damage = my_gi.attack - my_gi.defense;
 				if (my_info.mana > damage) my_info.mana -= damage;
 				else my_info.mana = 0;
 			}
-			my_info.mana += my_gi.mpm;
-
-
-			_digits = my_info.mana;
-			//_digits = (my_gi.attack <<4) + my_gi.defense;
 		} else {
 			my_gi.listen_period--;
 		}
 	}
+
+	/* Handle button pressed event */
+	if (flags & FL_BUTTON) {
+		flags &= ~FL_BUTTON;
+		my_gi.display_mode++;
+		if (my_gi.display_mode > DISP_DEFENSE) {
+			my_gi.display_mode = DISP_MANA;
+		}
+	}
+
+	/* Indicate display mode */
+	display_node_status();
 }
