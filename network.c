@@ -28,7 +28,7 @@ void network_init(uint8_t role) {
 
 void network_mkpacket(struct packet *p) {
 	uint8_t *a = (uint8_t *) p;
-	for (int i = sizeof(struct packet); i >= 0; i--)
+	for (int i = sizeof(struct packet) - 1; i >= 0; i--)
 		a[i] = 0;
 	p->node_from = my_info.id;
 	p->node_to = 0x6666;
