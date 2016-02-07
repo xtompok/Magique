@@ -25,38 +25,38 @@ struct game_info my_gi;
 
 uint8_t my_attack(void){
 	switch (my_info.id & 0xf) {
-		case 1: /* Náčelník; TODO: +Počet členů */
+		case 1: /* Nacelnik TODO: +Pocet spoluhracu */
 			return 1 + my_gi.last_teammates;
-		case 2: /* Strážce vlajky */
+		case 2: /* Strazce vlajky */
 			return 5;
 		case 3: /* Balvan */
 			return 1;
-		case 4: /* Samotář */
+		case 4: /* Samotar */
 			if (my_gi.last_teammates == 0) {
 				return 5;
 			} else {
 				return 1;
 			}
-		default: /* Pěšák */
+		default: /* Pesak */
 			return 1;
 	}
 }
 
 uint8_t my_defence(void){
 	switch (my_info.id & 0xf) {
-		case 1: /* Náčelník; TODO: +Počet členů */
+		case 1: /* Nacelnik TODO: +Pocet spoluhracu */
 			return 1 + my_gi.last_teammates;
-		case 2: /* Strážce vlajky */
+		case 2: /* Strazce vlajky */
 			return 0;
 		case 3: /* Balvan */
 			return 10;
-		case 4: /* Samotář */
+		case 4: /* Samotar */
 			if (my_gi.last_teammates == 0) {
 				return 5;
 			} else {
 				return 1;
 			}
-		default: /* Pěšák */
+		default: /* Pesak */
 			return 1;
 	}
 }
