@@ -45,6 +45,9 @@ base:
 	make clean
 	make base.elf BASE=1
 
+base-prog: base
+	mspdebug rf2500 "prog base.elf"
+
 base.elf: $(OBJS_BASE) base.o
 	$(CC) $(CFLAGS_BASE) -o $@ base.o $(OBJS_BASE)
 

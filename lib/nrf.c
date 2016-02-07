@@ -19,7 +19,7 @@
 #define NRF_CMD_R_RX_PAYLOAD 0x61
 #define NRF_CMD_W_TX_PAYLOAD 0xA0
 #define NRF_CMD_FLUSH_TX 0xE1
-#define NRF_CMD_FLUXH_RX 0xE2
+#define NRF_CMD_FLUSH_RX 0xE2
 
 #define NRF_CMD_NOP 0xff
 
@@ -138,4 +138,10 @@ void _nrf_setrx(unsigned char prx) {
 	if (prx) config |= PRIM_RX;
 	else config &= ~PRIM_RX;
 	nrf_reg_write(NRF_REG_CONFIG, config, 1);
+}
+
+void nrf_cmd_flush_rx(void) {
+	nrf_csl();
+	_nrf_status = spi_xfer_byte(NRF_CMD_FLUSH_RX);
+	nrf_csh();
 }

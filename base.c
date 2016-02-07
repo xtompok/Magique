@@ -8,7 +8,6 @@
  ******************************************************************************/
 
 #include <msp430.h>
-#include <legacymsp430.h>
 #include "uart.h"
 #include "delay.h"
 #include "spi.h"
@@ -16,27 +15,9 @@
 #include "adc.h"
 #include "network.h"
 #include "magique.h"
-#include "modes/magique_source.h"
 
-static volatile unsigned int _jiffies;
-static volatile unsigned int _wakeup;
-static volatile unsigned int _timeout;
-static void (*_timeout_fn)(void);
 
 struct node my_info;
-
-void sleep_ms(unsigned int ms) {
-	if (ms < 5) ms = 5;
-	_wakeup = _jiffies + ms/5;
-	LPM3;
-}
-
-void timeout_ms(unsigned int ms, void (*callback)(void)) {
-	if (ms < 5) ms = 5;
-	_timeout = _jiffies - 1;
-	_timeout_fn = callback;
-	_timeout = _jiffies + ms/5;
-}
 
 int main() {
 	/* Setup clock and disable watchdog */
@@ -48,16 +29,8 @@ int main() {
 
 	/* Setup output */
 	P2DIR |= BIT3;
-	//P2REN |= BIT3;
-	//P2OUT &= ~BIT3;
 	/* Setup input */
 	P2DIR &= ~(BIT4 | BIT5);
-
-	/* Setup timer: SMCLK/1, Up mode */
-	//TACTL = TASSEL_2 | ID_3 | MC_1;
-	//TACCR0 = 10000; /* 1s = 1 000 000 ticks, 1ms=1 000, 20 ms = 20 000 */
-	//CCTL0 = CCIE;
-
 
 	delay_ms(300);
 
@@ -66,44 +39,64 @@ int main() {
 	uart_init();
 
 	uart_puts("Initializing Sensor BaseStation: ");
-
-
 	uart_puts("spi ");
 	spi_init();
+
 	uart_puts("nrf \r\n");
-	/* Setup the NRF24L01 */
-
 	nrf_init();
-	nrf_powerup();
-	nrf_reg_write(NRF_REG_RF_SETUP, RF_SETUP, 1);
-
-	uart_puts("NRF status register: ");
-	uart_putib(_nrf_status, 8);
-	uart_putc('\r');
-	uart_putc('\n');
-	uart_puts("NRF config register: ");
-	uart_putib(nrf_reg_read(NRF_REG_CONFIG, 1), 8);
-	uart_putc('\r');
-	uart_putc('\n');
-
-	uart_puts("Entering control loop.\r\n");
-
-	nrf_reg_write(NRF_REG_RF_CH, RF_CH, 1);
-	nrf_reg_write(NRF_REG_RX_PW_P0, sizeof(struct packet), 1);
+	network_init( RF_ROLE_RX );
 	nrf_setrx();
+	nrf_cmd_flush_rx();
 	nrf_listen();
+	uint8_t mode = 'm', newmode = 0;
+	uint8_t mpm = 5;
 	while (1) {
-		magique_source_process();
+		if (uart_hasc())
+			newmode = uart_getc();
+		switch (mode) {
+			case 'l':
+				network_arcv_start();
+				if (nrf_receive((unsigned char *) &pk_in, sizeof(struct packet))) {
+					/* Output blob */
+					uart_puts("\rPacketBlob:");
+					for (int i = 0; i < sizeof(struct packet); i++) {
+						uart_putix(((char *) &pk_in)[i], 2);
+						uart_putc(' ');
+					}
+					uart_puts("\r\n");
+				}
+				delay_ms(100);
+				break;
+			case 'm':
+				if (newmode) {
+					if ((newmode > '0') && (newmode <= '9')) {
+						mpm = newmode - '0';
+						newmode = 0;
+					}
+				}
+				nrf_nolisten();
+				nrf_settx();
+				network_mkpacket(&pk_out);
+				pk_out.mpm = mpm;
+				network_send(&pk_out, 0);
+				uart_puts("m(");
+				uart_putix(mpm, 2);
+				uart_puts(")");
+				delay_ms(100);
+				break;
+			default:;
+		}
+		if (newmode) {
+			uart_putc(mode);
+			uart_puts(" -> ");
+			uart_putc(newmode);
+			uart_puts("\r\n");
+			mode = newmode;
+			newmode = 0;
+		}
 	}
 }
 
+void __attribute__((interrupt(WDT_VECTOR))) WDT_ISR(void) {
 
-interrupt(WDT_VECTOR) WDT_ISR(void) {
-	_jiffies++;
-	//if (!(_jiffies & 0xfff)) LPM3_EXIT;
-	if (_jiffies == _wakeup) LPM3_EXIT;
-	if (_jiffies == _timeout) _timeout_fn();
-//	uart_putix(_jiffies, 4);
-//		uart_putc('\r');
-//		uart_putc('\n');
 }

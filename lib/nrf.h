@@ -25,6 +25,7 @@ void nrf_reg_write(unsigned char reg, unsigned int data, unsigned char size);
 void nrf_transmit(unsigned char *data, unsigned char len);
 int nrf_receive(unsigned char *data, unsigned char len);
 void _nrf_setrx(unsigned char prx);
+void nrf_cmd_flush_rx(void);
 
 void nrf_listen();
 void nrf_nolisten();

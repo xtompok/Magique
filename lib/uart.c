@@ -8,13 +8,13 @@ void uart_init(void) {
 	uart_set_rx_fn(0L);
 
 	P1SEL  = BIT1 + BIT2;
-  	P1SEL2 = BIT1 + BIT2;
-  	UCA0CTL1 |= UCSSEL_2;                     // SMCLK
-  	UCA0BR0 = 104;                            // 1MHz 9600
-  	UCA0BR1 = 0;                              // 1MHz 9600
-  	UCA0MCTL = UCBRS0;                        // Modulation UCBRSx = 1
-  	UCA0CTL1 &= ~UCSWRST;                     // Initialize USCI state machine
-  	IE2 |= UCA0RXIE;                          // Enable USCI_A0 RX interrupt
+	P1SEL2 = BIT1 + BIT2;
+	UCA0CTL1 |= UCSSEL_2;                     // SMCLK
+	UCA0BR0 = 0x45;                           // 8MHz 115200bps
+	UCA0BR1 = 0x00;                           
+	UCA0MCTL = UCBRS0;                        // Modulation UCBRSx = 1
+	UCA0CTL1 &= ~UCSWRST;                     // Initialize USCI state machine
+	//IE2 |= UCA0RXIE;                          // Enable USCI_A0 RX interrupt
 }
 
 void uart_set_rx_fn(void (*isr_ptr)(unsigned char c)) {
