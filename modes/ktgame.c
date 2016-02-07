@@ -23,6 +23,44 @@ struct game_info {
 
 struct game_info my_gi;
 
+uint8_t my_attack(void){
+	switch (my_info.id & 0xf) {
+		case 1: /* Náčelník; TODO: +Počet členů */
+			return 1 + my_gi.last_teammates;
+		case 2: /* Strážce vlajky */
+			return 5;
+		case 3: /* Balvan */
+			return 1;
+		case 4: /* Samotář */
+			if (my_gi.last_teammates == 0) {
+				return 5;
+			} else {
+				return 1;
+			}
+		default: /* Pěšák */
+			return 1;
+	}
+}
+
+uint8_t my_defence(void){
+	switch (my_info.id & 0xf) {
+		case 1: /* Náčelník; TODO: +Počet členů */
+			return 1 + my_gi.last_teammates;
+		case 2: /* Strážce vlajky */
+			return 0;
+		case 3: /* Balvan */
+			return 10;
+		case 4: /* Samotář */
+			if (my_gi.last_teammates == 0) {
+				return 5;
+			} else {
+				return 1;
+			}
+		default: /* Pěšák */
+			return 1;
+	}
+}
+
 void ktgame_process(void) {
 	my_info.mana = 100;
 
@@ -32,34 +70,9 @@ void ktgame_process(void) {
 		/* TODO: Insert magique stuff here */
 
 		if (my_info.mana > 0) {
-
 			network_mkpacket(&pk_out);
-			switch (my_info.id & 0xf) {
-				case 1: /* Náčelník; TODO: +Počet členů */
-					pk_out.attack = 1+my_gi.last_teammates;
-					pk_out.defense = 1+my_gi.last_teammates;
-					break;
-				case 2: /* Strážce vlajky */
-					pk_out.attack = 5;
-					pk_out.defense = 0;
-					break;
-				case 3: /* Balvan */
-					pk_out.attack = 1;
-					pk_out.defense = 10;
-					break;
-				case 4: /* Samotář */
-					pk_out.attack = 1;
-					pk_out.defense = 1;
-					if (my_gi.last_teammates == 0) {
-						pk_out.attack += 4;
-						pk_out.defense += 3;
-					}
-					break;
-				default: /* Pěšák */
-					pk_out.attack = 1;
-					pk_out.defense = 1;
-					break;
-			}
+			pk_out.attack = my_attack();
+			pk_out.defense = my_defence();
 			network_send(&pk_out, 0);
 			if (flags & FL_GAME_LISTEN)
 				network_arcv_start();
@@ -73,7 +86,7 @@ void ktgame_process(void) {
 		/* Initialize game listening period */
 		flags |= FL_GAME_LISTEN;
 		my_gi.listen_period = 50;
-		my_gi.defense = 0;
+		my_gi.defense = my_defence();
 		my_gi.attack = 0;
 		for (uint8_t i = 0; i < 8; i++) {
 			my_gi.seen[i] = 0;
