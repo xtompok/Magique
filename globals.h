@@ -24,6 +24,7 @@ extern volatile unsigned char evlist;
 #define EV_GREEN_BLINK BIT2
 #define EV_SHORT_POLL BIT3
 #define EV_LONG_POLL BIT4
+#define EV_TICK_POLL BIT5
 #define EV_LISTEN BIT6
 
 extern volatile unsigned char _digits;

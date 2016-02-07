@@ -183,40 +183,42 @@ int main() {
 			continue;
 		}
 
-		switch (my_info.mode) {
-			case MODE_KTGAME:
-				ktgame_process();
-				break;
-			case MODE_MAGIQUE_SOURCE:
-				magique_source_process();
-				break;
-			case MODE_MAGIQUE_STONE:
-				magique_stone_process();
-				break;
-			default:;
-		}
+		if (evlist & EV_TICK_POLL) {
+			switch (my_info.mode) {
+				case MODE_KTGAME:
+					ktgame_process();
+					break;
+				case MODE_MAGIQUE_SOURCE:
+					magique_source_process();
+					break;
+				case MODE_MAGIQUE_STONE:
+					magique_stone_process();
+					break;
+				default:;
+			}
 
-		/* Handle LED blinking */
-		if (evlist & EV_RED_BLINK) {
-			sr_led(SR_O_RED, 1);
-			jiffies_led[0] = jiffies;
-		}
-		if (evlist & EV_YELLOW_BLINK) {
-			sr_led(SR_O_YELLOW, 1);
-			jiffies_led[1] = jiffies;
-		}
-		if (evlist & EV_GREEN_BLINK) {
-			sr_led(SR_O_GREEN, 1);
-			jiffies_led[2] = jiffies;
-		}
-		#define BLINK_TIME 8
-		for (unsigned int led = 0; led < 3; led++) {
-			if (((jiffies - jiffies_led[led]) > BLINK_TIME) || ((jiffies_led[led] - jiffies) >= (255-BLINK_TIME))) {
-				switch (led) {
-					case 0: sr_led(SR_O_RED, 0); break;
-					case 1: sr_led(SR_O_YELLOW, 0); break;
-					case 2: sr_led(SR_O_GREEN, 0); break;
-					default: break;
+			/* Handle LED blinking */
+			if (evlist & EV_RED_BLINK) {
+				sr_led(SR_O_RED, 1);
+				jiffies_led[0] = jiffies;
+			}
+			if (evlist & EV_YELLOW_BLINK) {
+				sr_led(SR_O_YELLOW, 1);
+				jiffies_led[1] = jiffies;
+			}
+			if (evlist & EV_GREEN_BLINK) {
+				sr_led(SR_O_GREEN, 1);
+				jiffies_led[2] = jiffies;
+			}
+			#define BLINK_TIME 8
+			for (unsigned int led = 0; led < 3; led++) {
+				if (((jiffies - jiffies_led[led]) > BLINK_TIME) || ((jiffies_led[led] - jiffies) >= (255-BLINK_TIME))) {
+					switch (led) {
+						case 0: sr_led(SR_O_RED, 0); break;
+						case 1: sr_led(SR_O_YELLOW, 0); break;
+						case 2: sr_led(SR_O_GREEN, 0); break;
+						default: break;
+					}
 				}
 			}
 		}
@@ -257,10 +259,13 @@ void __attribute__((interrupt(WDT_VECTOR))) WDT_ISR(void) {
 	if ((jiffies & 0x0f) == 0)
 		evlist |= EV_SHORT_POLL;
 
+	/* Tick every jiffie */
+	evlist |= EV_TICK_POLL;
+
 	/* Long polling every second or two */
 	if (jiffies == 132) evlist |= EV_LONG_POLL;
 
-	if (countdown == 1) flags &= ~FL_DISPLAY;
+	//if (countdown == 1) flags &= ~FL_DISPLAY;
 
 	//sr_update();
 	LPM3_EXIT;
