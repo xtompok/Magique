@@ -8,6 +8,7 @@
  ******************************************************************************/
 
 #include <msp430.h>
+#include "hardware.h"
 #include "ktgame.h"
 #include "magique.h"
 #include "globals.h"
@@ -22,6 +23,10 @@ struct game_info {
 	uint8_t teammates;
 	uint8_t last_teammates;
 	uint8_t mpm;
+	uint8_t flag_holder;
+	uint8_t flag_attender;
+	uint8_t button_counter;
+	uint16_t score;
 };
 
 struct game_info my_gi;
@@ -71,6 +76,14 @@ uint8_t my_defence(void) {
 void ktgame_init(void){
 	my_info.mana = 200;
 	my_gi.display_mode = DISP_MANA;
+
+	if (my_info.mode == MODE_KTGAME_FLAG) {
+		my_gi.display_mode = 0xff;
+	}
+	/* flag */
+	my_gi.flag_holder = FLAG_HOLDER_NOONE;
+	my_gi.flag_attender = FLAG_HOLDER_NOONE;
+	my_gi.button_counter = 0;
 }
 
 void initialize_my_gi(void) {
@@ -105,8 +118,21 @@ void display_node_status(void) {
 		evlist |= EV_RED_BLINK;
 #endif
 		break;
+		/* Flags */
+	case DISP_RED:
+		_digits = my_gi.score >> 4;
+		if (my_gi.button_counter > 0)
+			_digits = my_gi.button_counter;
+		evlist |= EV_RED_BLINK;
+		break;
+	case DISP_GREEN:
+		_digits = my_gi.score >> 4;
+		if (my_gi.button_counter > 0)
+			_digits = my_gi.button_counter;
+		evlist |= EV_GREEN_BLINK;
+		break;
 	default:
-		if (my_gi.listen_period == 0) _digits = my_info.mana;
+		_digits = my_gi.button_counter;
 		break;
 	}
 }
@@ -169,7 +195,8 @@ void ktgame_process(void) {
 
 			/* TODO: Evaluate round */
 			if (my_gi.mpm > 0) {
-				my_info.mana += my_gi.mpm;
+				if (my_info.mana <= MANA_MAX)
+					my_info.mana += my_gi.mpm;
 			} else if (my_gi.attack > my_gi.defense) {
 				uint16_t damage = my_gi.attack - my_gi.defense;
 				if (my_info.mana > damage) my_info.mana -= damage;
@@ -191,4 +218,74 @@ void ktgame_process(void) {
 
 	/* Indicate display mode */
 	display_node_status();
+}
+
+
+void ktgame_process_flag(void) {
+	/* Handle short polling (16 times per second). */
+	if (evlist & EV_SHORT_POLL) {
+		evlist &= ~EV_SHORT_POLL;
+		/* TODO: Insert magique stuff here */
+		/* Indicate display mode */
+	}
+
+
+	/* Handle long polling (once per second). */
+	if (evlist & EV_LONG_POLL) {
+		evlist &= ~EV_LONG_POLL;
+		/* TODO: Expensive network communication can be done here. */
+		display_node_status();
+
+		my_gi.score++;
+		/* Button pressed checker */
+		if (!(P2IN & BUTTON_PIN)) {
+			/* Initialize game listening period */
+			flags |= FL_GAME_LISTEN;
+			my_gi.listen_period = 100;
+			my_gi.button_counter++;
+			network_arcv_start();
+		} else {
+			my_gi.button_counter = 0;
+		}
+	}
+
+	if (flags & FL_GAME_LISTEN) {
+		while (network_arcv(&pk_in)) {
+#ifdef NETDEBUG
+			evlist |= EV_YELLOW_BLINK;
+#endif
+			uint8_t team = !!(pk_in.node_from & 0x20);
+			if (team != my_gi.flag_attender) {
+				my_gi.button_counter = 1;
+				my_gi.flag_attender = team;
+			}
+		}
+
+		if (my_gi.listen_period == 0) {
+			flags &= ~FL_GAME_LISTEN;
+			/* TODO: Turn off radio */
+			network_arcv_stop();
+			/* TODO: Evaluate round */
+
+			if (my_gi.button_counter >= FLAG_CONQUER_PERIOD && my_gi.flag_attender != FLAG_HOLDER_NOONE) {
+				my_gi.flag_holder = my_gi.flag_attender;
+				my_gi.flag_attender = FLAG_HOLDER_NOONE;
+				my_gi.button_counter = 0;
+				if (my_gi.flag_holder == TEAM_RED) {
+					my_gi.display_mode = DISP_RED;
+				}
+				if (my_gi.flag_holder == TEAM_GREEN) {
+					my_gi.display_mode = DISP_GREEN;
+				}
+				my_gi.score = 1;
+			}
+		} else {
+			my_gi.listen_period--;
+		}
+	}
+
+	/* Handle button pressed event */
+	if (flags & FL_BUTTON) {
+
+	}
 }

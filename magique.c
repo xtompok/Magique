@@ -169,7 +169,7 @@ int main() {
 	my_info.id = MY_ID;
 
 	/* Initialize game */
-	if (my_info.mode == MODE_KTGAME) {
+	if (my_info.mode == MODE_KTGAME || my_info.mode == MODE_KTGAME_FLAG) {
 		ktgame_init();
 	}
 
@@ -197,6 +197,9 @@ int main() {
 					break;
 				case MODE_MAGIQUE_STONE:
 					magique_stone_process();
+					break;
+				case MODE_KTGAME_FLAG:
+					ktgame_process_flag();
 					break;
 				default:;
 			}

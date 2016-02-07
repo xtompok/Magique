@@ -23,6 +23,7 @@ struct node {
 #define MODE_KTGAME 1
 #define MODE_MAGIQUE_SOURCE 2
 #define MODE_MAGIQUE_STONE 3
+#define MODE_KTGAME_FLAG 4
 
 #define ESSENCE_RED     (1 << 0)
 #define ESSENCE_YELLOW  (1 << 1)
