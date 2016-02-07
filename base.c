@@ -49,7 +49,7 @@ int main() {
 	nrf_cmd_flush_rx();
 	nrf_listen();
 	uint8_t mode = 'm', newmode = 0;
-	uint8_t mpm = 5;
+	uint8_t mpm = 5, mode_adv = 0;
 	while (1) {
 		if (uart_hasc())
 			newmode = uart_getc();
@@ -84,6 +84,22 @@ int main() {
 				uart_puts(")");
 				delay_ms(100);
 				break;
+			case 's':
+				if (newmode) {
+					if ((newmode > '0') && (newmode <= '9')) {
+						mode_adv = newmode - '0';
+						newmode = 0;
+					}
+				}
+				nrf_nolisten();
+				nrf_settx();
+				network_mkpacket(&pk_out);
+				pk_out.mode_adv = mode_adv;
+				network_send(&pk_out, 0);
+				uart_puts("s(");
+				uart_putix(mode_adv, 2);
+				uart_puts(")");
+				delay_ms(100);
 			default:;
 		}
 		if (newmode) {
