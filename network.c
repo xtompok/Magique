@@ -16,6 +16,7 @@ struct packet pk_in;
 struct packet pk_out;
 
 void network_init(uint8_t role) {
+	nrf_powerdown();
 	nrf_powerup();
 	// Setup the radio: default addresses, 0dBm tx power, 1Mbit
 	nrf_reg_write(NRF_REG_CONFIG, EN_CRC | PWR_UP | (role & PRIM_RX) | CRCO, 1);
