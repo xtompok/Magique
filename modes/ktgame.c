@@ -24,41 +24,43 @@ struct game_info {
 struct game_info my_gi;
 
 void ktgame_process(void) {
+	my_info.mana = 100;
+
 	/* Handle short polling (16 times per second). */
 	if (evlist & EV_SHORT_POLL) {
 		evlist &= ~EV_SHORT_POLL;
 		/* TODO: Insert magique stuff here */
 
 		if (my_info.mana > 0) {
-			struct packet p;
-			network_mkpacket(&p);
+
+			network_mkpacket(&pk_out);
 			switch (my_info.id & 0xf) {
 				case 1: /* Náčelník; TODO: +Počet členů */
-					p.attack = 1+my_gi.last_teammates;
-					p.defense = 1+my_gi.last_teammates;
+					pk_out.attack = 1+my_gi.last_teammates;
+					pk_out.defense = 1+my_gi.last_teammates;
 					break;
 				case 2: /* Strážce vlajky */
-					p.attack = 5;
-					p.defense = 0;
+					pk_out.attack = 5;
+					pk_out.defense = 0;
 					break;
 				case 3: /* Balvan */
-					p.attack = 1;
-					p.defense = 10;
+					pk_out.attack = 1;
+					pk_out.defense = 10;
 					break;
 				case 4: /* Samotář */
-					p.attack = 1;
-					p.defense = 1;
+					pk_out.attack = 1;
+					pk_out.defense = 1;
 					if (my_gi.last_teammates == 0) {
-						p.attack += 4;
-						p.defense += 3;
+						pk_out.attack += 4;
+						pk_out.defense += 3;
 					}
 					break;
 				default: /* Pěšák */
-					p.attack = 1;
-					p.defense = 1;
+					pk_out.attack = 1;
+					pk_out.defense = 1;
 					break;
 			}
-			network_send(&p, 0);
+			network_send(&pk_out, 0);
 		}
 	}
 
@@ -68,26 +70,26 @@ void ktgame_process(void) {
 		/* TODO: Expensive network communication can be done here. */
 		/* Initialize game listening period */
 		flags |= FL_GAME_LISTEN;
-		my_gi.listen_period = 2;
+		my_gi.listen_period = 50;
 		my_gi.defense = 0;
 		my_gi.attack = 0;
 	}
 
 	if (flags & FL_GAME_LISTEN) {
 		my_gi.listen_period--;
-		struct packet p;
-		while (network_rcv(&p, 30)) {
-			uint8_t _bop_index = p.node_from & 0x7;
-			uint8_t _bop_bit = 1 << ((p.node_from & 0xf8) >> 3);
+		struct packet pk_out;
+		while (network_rcv(&pk_out, 30)) {
+			uint8_t _bop_index = pk_out.node_from & 0x7;
+			uint8_t _bop_bit = 1 << ((pk_out.node_from & 0xf8) >> 3);
 			if (!(my_gi.seen[_bop_index] & _bop_bit)) {
 				my_gi.seen[_bop_index] |= _bop_bit;
-				uint8_t team = p.node_from & 0x20;
+				uint8_t team = pk_out.node_from & 0x20;
 				uint8_t my_team = my_info.id & 0x20;
 				if (team == my_team) {
-					my_gi.defense += p.defense;
+					my_gi.defense += pk_out.defense;
 					my_gi.teammates++;
 				} else {
-					my_gi.attack += p.attack;
+					my_gi.attack += pk_out.attack;
 				}
 			}
 		}

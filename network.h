@@ -37,12 +37,14 @@ struct packet {
 	uint8_t _pad[20];
 };
 
+extern struct packet pk_in;
+extern struct packet pk_out;
+
 #define RF_CH 110
 #define RF_SETUP 0
 //(RF_PWR0 | RF_PWR1)
 #define RF_ROLE_TX 0
 #define RF_ROLE_RX PRIM_RX
-
 
 /* Initialized NRF for network communication. */
 void network_init(uint8_t role);

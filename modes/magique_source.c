@@ -15,11 +15,11 @@
 
 #ifdef HW_BASE
 #include "uart.h"
-void print_blob(struct packet *p) {
+void print_blob(struct packet *pk_out) {
 	/* Output blob */
 	uart_puts("\rPacketBlob:");
 	for (int i = 0; i < sizeof(struct packet); i++) {
-		uart_putix(((char *) p)[i], 2);
+		uart_putix(((char *) pk_out)[i], 2);
 		uart_putc(' ');
 	}
 	uart_puts(".\r\n");
@@ -27,9 +27,6 @@ void print_blob(struct packet *p) {
 #endif
 
 uint8_t _si = 0;
-
-struct packet p;
-struct packet r;
 
 void magique_source_process(void) {
 	if (_si == 0) {
@@ -41,18 +38,18 @@ void magique_source_process(void) {
 	}
 
 
-	if (network_arcv(&p)) {
+	if (network_arcv(&pk_out)) {
 		//network_mkpacket(&r);
-		r.mpm = 0xff;
-		r.node_to = p.node_from;
+		pk_in.mpm = 0xff;
+		pk_in.node_to = pk_out.node_from;
 		nrf_nolisten();
-		network_send(&r, 1);
+		network_send(&pk_in, 1);
 		evlist |= EV_GREEN_BLINK;
 		_digits++;
 		delay_ms(3);
 		network_arcv_start();
 #ifdef HW_BASE
-		print_blob(&p);
+		print_blob(&pk_out);
 #endif
 	}
 

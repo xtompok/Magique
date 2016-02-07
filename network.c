@@ -12,6 +12,9 @@
 #include "lib/delay.h"
 #include "magique.h"
 
+struct packet pk_in;
+struct packet pk_out;
+
 void network_init(uint8_t role) {
 	nrf_powerup();
 	// Setup the radio: default addresses, 0dBm tx power, 1Mbit
@@ -19,6 +22,8 @@ void network_init(uint8_t role) {
 	nrf_reg_write(NRF_REG_RF_CH, RF_CH, 1);
 	nrf_reg_write(NRF_REG_RX_PW_P0, sizeof(struct packet), 1);
 	//nrf_reg_write(NRF_REG_RF_SETUP, RF_SETUP, 1);
+	// Make everything async
+	nrf_reg_write(NRF_REG_EN_AA, 0, 1);
 }
 
 void network_mkpacket(struct packet *p) {
