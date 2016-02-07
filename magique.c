@@ -141,25 +141,14 @@ int main() {
 
 	_digits = 0;
 
-	/* DEBUG: set mode */
-	//my_info.mode = MODE_MAGIQUE_SOURCE;
+	/* Set default mode advertisement */
 #if MY_MODE
-	my_info.mode = MY_MODE;
+	my_info.mode_adv = MY_MODE;
 #else
-	my_info.mode = MODE_MAGIQUE_SOURCE;
+	my_info.mode_adv = MODE_MAGIQUE_SOURCE;
 #endif
 
 	my_info.id = MY_ID;
-
-	/* Initialize game */
-	if (my_info.mode == MODE_KTGAME || my_info.mode == MODE_KTGAME_FLAG) {
-		ktgame_init();
-	}
-
-	/* Show mode for some time */
-	_digits = my_info.mode;
-	flags |= FL_DISPLAY;
-	countdown = 1000;
 
 	/* Main control loop */
 	unsigned char jiffies_led[3] = {0,0,0};
@@ -168,6 +157,28 @@ int main() {
 		if (!(flags || evlist)) {
 			LPM3;
 			continue;
+		}
+
+		/* Handle mode switching. Individual modes still need to recognize the
+		 * need and if willing, set my_id.mode_adv to the appropriate mode. */
+		if (my_info.mode_adv && (my_info.mode_adv != my_info.mode)) {
+			my_info.mode = my_info.mode_adv;
+			my_info.mode_adv = 0;
+
+			/* Display the new mode on screen for a short time, and beep */
+			_digits = my_info.mode;
+			flags |= FL_DISPLAY;
+			countdown = 1000;
+			beep(1000, 5, 0);
+
+			/* Done, let's initialize the mode selected. */
+			switch (my_info.mode) {
+				case MODE_KTGAME_FLAG:
+				case MODE_KTGAME:
+					ktgame_init();
+					break;
+				default:;
+			}
 		}
 
 		if (evlist & EV_TICK_POLL) {
