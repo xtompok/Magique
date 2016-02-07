@@ -15,7 +15,8 @@
 /* Node specific data */
 struct node {
 	uint16_t id;
-	uint16_t mode;
+	uint8_t mode;
+	uint8_t mode_adv;
 	uint16_t mana;
 	uint8_t  essences;
 };

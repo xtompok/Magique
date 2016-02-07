@@ -33,8 +33,11 @@ struct packet {
 	int8_t mpm;	/* Mana per minute, shall only be emitted by the source and can be negative */
 	uint8_t ess; /* Essencess available, shall only be emitted by the source */
 
+	/* Mode switching; 13B */
+	uint8_t mode_adv;
+
 	/* 32B */
-	uint8_t _pad[20];
+	uint8_t _pad[19];
 };
 
 extern struct packet pk_in;
