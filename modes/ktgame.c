@@ -61,6 +61,8 @@ void ktgame_process(void) {
 					break;
 			}
 			network_send(&pk_out, 0);
+			if (flags & FL_GAME_LISTEN)
+				network_arcv_start();
 		}
 	}
 
@@ -76,23 +78,22 @@ void ktgame_process(void) {
 		for (uint8_t i = 0; i < 8; i++) {
 			my_gi.seen[i] = 0;
 		}
+		network_arcv_start();
 	}
 
 	if (flags & FL_GAME_LISTEN) {
-		my_gi.listen_period--;
-		struct packet pk_out;
-		while (network_rcv(&pk_out, 30)) {
-			uint8_t _bop_index = pk_out.node_from & 0x7;
-			uint8_t _bop_bit = 1 << ((pk_out.node_from & 0xf8) >> 3);
+		while (network_arcv(&pk_in)) {
+			uint8_t _bop_index = pk_in.node_from & 0x7;
+			uint8_t _bop_bit = 1 << ((pk_in.node_from & 0xf8) >> 3);
 			if (!(my_gi.seen[_bop_index] & _bop_bit)) {
 				my_gi.seen[_bop_index] |= _bop_bit;
-				uint8_t team = pk_out.node_from & 0x20;
+				uint8_t team = pk_in.node_from & 0x20;
 				uint8_t my_team = my_info.id & 0x20;
 				if (team == my_team) {
-					my_gi.defense += pk_out.defense;
+					my_gi.defense += pk_in.defense;
 					my_gi.teammates++;
 				} else {
-					my_gi.attack += pk_out.attack;
+					my_gi.attack += pk_in.attack;
 				}
 			}
 		}
@@ -100,6 +101,7 @@ void ktgame_process(void) {
 		if (my_gi.listen_period == 0) {
 			flags &= ~FL_GAME_LISTEN;
 			/* TODO: Turn off radio */
+			network_arcv_stop();
 
 			/* TODO: Evaluate round */
 			if (my_gi.attack > my_gi.defense) {
@@ -108,6 +110,9 @@ void ktgame_process(void) {
 				else my_info.mana = 0;
 
 			}
+			_digits = (my_gi.attack << 4) + my_gi.defense;
+		} else {
+			my_gi.listen_period--;
 		}
 	}
 }
