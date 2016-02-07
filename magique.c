@@ -24,28 +24,11 @@
 #include "modes/magique_source.h"
 #include "modes/magique_stone.h"
 
-static volatile int second = 0;
 volatile unsigned char jiffies = 0;
-
-#define JS (CLOCK/65536)
-
-unsigned char lcdoff = 0;
-volatile unsigned char button_sample = 0;
-unsigned char button_code = 0;
-unsigned char rng = 0;
 
 struct node my_info;
 
-/* Operation mode */
-unsigned char mode = 0;
-unsigned char mode_next = 0;
-#define MODE_DEFAULT 0
-#define MODE_SELECT 1
-#define MODE_TIMESUP 2
-#define MODE_IMPERIAL 3
-
 volatile unsigned int countdown = 0;
-
 
 /* Change current digit multiplex */
 void mplex() {
