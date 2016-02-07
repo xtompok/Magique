@@ -73,6 +73,9 @@ void ktgame_process(void) {
 		my_gi.listen_period = 50;
 		my_gi.defense = 0;
 		my_gi.attack = 0;
+		for (uint8_t i = 0; i < 8; i++) {
+			my_gi.seen[i] = 0;
+		}
 	}
 
 	if (flags & FL_GAME_LISTEN) {
