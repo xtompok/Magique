@@ -124,6 +124,8 @@ void magique_self_test(void) {
 }
 
 int main() {
+	my_info.mana = 100;
+
 	/* Setup clock, timers, interrupts and IOs */
 	magique_hw_init();
 
