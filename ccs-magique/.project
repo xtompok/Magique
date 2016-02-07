@@ -56,6 +56,11 @@
 			<locationURI>PARENT-1-PROJECT_LOC/magique.h</locationURI>
 		</link>
 		<link>
+			<name>modes</name>
+			<type>2</type>
+			<locationURI>PARENT-1-PROJECT_LOC/modes</locationURI>
+		</link>
+		<link>
 			<name>network.c</name>
 			<type>1</type>
 			<locationURI>PARENT-1-PROJECT_LOC/network.c</locationURI>
