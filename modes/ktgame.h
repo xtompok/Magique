@@ -15,6 +15,9 @@
 #define DISP_DEFENSE 2
 #define DISP_RED 10
 #define DISP_GREEN 11
+#define DISP_DEFAULT 0xff
+
+#define TEAM_BIT 0x20
 
 #define FLAG_HOLDER_NOONE 2
 #define TEAM_RED 0

@@ -79,7 +79,7 @@ void ktgame_init(void){
 	my_gi.display_mode = DISP_MANA;
 
 	if (my_info.mode == MODE_KTGAME_FLAG) {
-		my_gi.display_mode = 0xff;
+		my_gi.display_mode = DISP_DEFAULT;
 	}
 	/* flag */
 	my_gi.flag_holder = FLAG_HOLDER_NOONE;
@@ -177,10 +177,15 @@ void ktgame_process(void) {
 #endif
 			uint8_t _bop_index = pk_in.node_from & 0x7;
 			uint8_t _bop_bit = 1 << ((pk_in.node_from & 0xf8) >> 3);
-			if (!(my_gi.seen[_bop_index] & _bop_bit)) {
+
+			/* base station sends mana - no attack/defense computation */
+			if (pk_in.mpm > 0) {
+				if (pk_in.mpm > my_gi.mpm)
+					my_gi.mpm = pk_in.mpm;
+			} else if (!(my_gi.seen[_bop_index] & _bop_bit)) {
 				my_gi.seen[_bop_index] |= _bop_bit;
-				uint8_t team = pk_in.node_from & 0x20;
-				uint8_t my_team = my_info.id & 0x20;
+				uint8_t team = pk_in.node_from & TEAM_BIT;
+				uint8_t my_team = my_info.id & TEAM_BIT;
 				if (team == my_team) {
 					my_gi.defense += pk_in.defense;
 					my_gi.teammates++;
@@ -188,8 +193,7 @@ void ktgame_process(void) {
 					my_gi.attack += pk_in.attack;
 				}
 			}
-			if (pk_in.mpm > my_gi.mpm)
-				my_gi.mpm = pk_in.mpm;
+
 		}
 
 		if (my_gi.listen_period == 0) {
@@ -261,7 +265,7 @@ void ktgame_process_flag(void) {
 #ifdef NETDEBUG
 			evlist |= EV_YELLOW_BLINK;
 #endif
-			uint8_t team = !!(pk_in.node_from & 0x20);
+			uint8_t team = !!(pk_in.node_from & TEAM_BIT);
 			if (team != my_gi.flag_attender) {
 				my_gi.button_counter = 1;
 				my_gi.flag_attender = team;
