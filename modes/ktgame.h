@@ -20,7 +20,7 @@
 #define TEAM_RED 0
 #define TEAM_GREEN 1
 
-#define MANA_MAX 200
+#define MANA_MAX 0xdd
 #define FLAG_CONQUER_PERIOD 6
 
 void ktgame_init(void);

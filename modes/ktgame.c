@@ -75,7 +75,7 @@ uint8_t my_defence(void) {
 }
 
 void ktgame_init(void){
-	my_info.mana = 200;
+	my_info.mana = MANA_MAX;
 	my_gi.display_mode = DISP_MANA;
 
 	if (my_info.mode == MODE_KTGAME_FLAG) {
@@ -199,8 +199,11 @@ void ktgame_process(void) {
 
 			/* TODO: Evaluate round */
 			if (my_gi.mpm > 0) {
-				if (my_info.mana <= MANA_MAX)
+				if (my_info.mana + my_gi.mpm <= MANA_MAX) {
 					my_info.mana += my_gi.mpm;
+				} else {
+					my_info.mana = MANA_MAX;
+				}
 			} else if (my_gi.attack > my_gi.defense) {
 				uint16_t damage = my_gi.attack - my_gi.defense;
 				if (my_info.mana > damage) my_info.mana -= damage;
