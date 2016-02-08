@@ -20,7 +20,7 @@ struct game_info {
 	uint8_t display_mode;
 	uint8_t listen_period;
 	uint8_t seen[8];
-	uint8_t political_knight_attack;
+	uint8_t special_attack;
 	uint16_t attack;
 	uint16_t defense;
 	uint8_t teammates;
@@ -98,7 +98,7 @@ void initialize_my_gi(void) {
 	my_gi.attack = 0;
 	my_gi.last_teammates = my_gi.teammates;
 	my_gi.mpm = 0;
-	my_gi.political_knight_attack = 0;
+	my_gi.special_attack = 0;
 	initialize_my_gi_common();
 }
 
@@ -204,7 +204,10 @@ void ktgame_process(void) {
 				} else {
 					my_gi.attack += pk_in.attack;
 					if ((pk_in.node_from & PLAYER_BITS) == PLAYER_POLITICAL_KNIGHT) {
-						my_gi.political_knight_attack = pk_in.attack;
+						my_gi.special_attack |= PLAYER_POLITICAL_KNIGHT;
+					}
+					if (pk_in.node_from & DRAGON_BIT) {
+						my_gi.special_attack |= PLAYER_DRAGON_HELPER;
 					}
 				}
 			}
@@ -226,14 +229,20 @@ void ktgame_process(void) {
 				uint16_t damage = my_gi.attack / my_gi.defense;
 
 				/* Political knight damages king and knight */
-				if (my_gi.political_knight_attack > 0) {
+				if (my_gi.special_attack & PLAYER_POLITICAL_KNIGHT) {
 					uint8_t myself = my_info.id & PLAYER_BITS;
 					if (myself == PLAYER_KING || myself == PLAYER_KNIGHT) {
 						damage = POLITICAL_KNIGHT_MASTER_KILL;
 					}
 				}
-				if (my_info.mana > damage) my_info.mana -= damage;
-				else my_info.mana = 0;
+				if (my_gi.special_attack & PLAYER_DRAGON_HELPER) {
+					damage = DRAGON_INSTANT_KILL;
+				}
+				/* Dragons can't die */
+				if (!(my_info.id & DRAGON_BIT)) {
+					if (my_info.mana > damage) my_info.mana -= damage;
+					else my_info.mana = 0;
+				}
 				if (my_info.mana == 0) {
 					beep(1000, 100, 1000);
 					beep(1000, 100, 1000);
