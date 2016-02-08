@@ -36,13 +36,13 @@ struct game_info my_gi;
 
 uint8_t my_attack(void) {
 	switch (my_info.id & PLAYER_BITS) {
-	case PLAYER_KING: /* Nacelnik TODO: +Pocet spoluhracu - Rado by kral */
+	case PLAYER_KING: /* Rado by kral */
 		return (1 + my_gi.last_teammates) << 2;
-	case PLAYER_KNIGHT: /* Strazce vlajky - Rytir*/
+	case PLAYER_KNIGHT: /* Rytir*/
 		return 16;
-	case PLAYER_FAT_KNIGHT: /* Balvan - Tlusty rytir*/
+	case PLAYER_FAT_KNIGHT: /* Tlusty rytir*/
 		return 0;
-	case PLAYER_POLITICAL_KNIGHT: /* Samotar - Politicky rytir*/
+	case PLAYER_POLITICAL_KNIGHT: /* Politicky rytir*/
 		if (my_gi.last_teammates > 0) {
 			return 0;
 		} else {
@@ -55,13 +55,13 @@ uint8_t my_attack(void) {
 
 uint8_t my_defence(void) {
 	switch (my_info.id & PLAYER_BITS) {
-	case PLAYER_KING: /* Nacelnik TODO: +Pocet spoluhracu - Rado by kral */
+	case PLAYER_KING: /* Rado by kral */
 		return 1 + my_gi.last_teammates;
-	case PLAYER_KNIGHT: /* Strazce vlajky - Rytir */
+	case PLAYER_KNIGHT: /* Rytir */
 		return 1;
-	case PLAYER_FAT_KNIGHT: /* Balvan - Tlusty rytir */
+	case PLAYER_FAT_KNIGHT: /* Tlusty rytir */
 		return 8;
-	case PLAYER_POLITICAL_KNIGHT: /* Samotar - Politicky rytir */
+	case PLAYER_POLITICAL_KNIGHT: /* Politicky rytir */
 		if (my_gi.last_teammates > 0) {
 			return 1;
 		} else {
@@ -154,8 +154,8 @@ void ktgame_process(void) {
 	/* Handle short polling (16 times per second). */
 	if (evlist & EV_SHORT_POLL) {
 		evlist &= ~EV_SHORT_POLL;
-		/* TODO: Insert magique stuff here */
 
+		/* Send packet */
 		if (my_info.mana > 0) {
 #ifdef NETDEBUG
 			evlist |= EV_YELLOW_BLINK;
@@ -173,7 +173,7 @@ void ktgame_process(void) {
 	if (evlist & EV_LONG_POLL) {
 		evlist &= ~EV_LONG_POLL;
 		my_info.vbat = (adc_read(0xb) >> 2);
-		/* TODO: Expensive network communication can be done here. */
+		/* Expensive network communication can be done here. */
 		/* Initialize game listening period */
 		flags |= FL_GAME_LISTEN;
 		initialize_my_gi();
@@ -215,7 +215,7 @@ void ktgame_process(void) {
 
 		if (my_gi.listen_period == 0) {
 			flags &= ~FL_GAME_LISTEN;
-			/* TODO: Turn off radio */
+			/* Turn off radio */
 			network_arcv_stop();
 
 			/* Evaluate round */
@@ -272,15 +272,13 @@ void ktgame_process_flag(void) {
 	/* Handle short polling (16 times per second). */
 	if (evlist & EV_SHORT_POLL) {
 		evlist &= ~EV_SHORT_POLL;
-		/* TODO: Insert magique stuff here */
-		/* Indicate display mode */
+		/* Magique stuff here */
 	}
-
 
 	/* Handle long polling (once per second). */
 	if (evlist & EV_LONG_POLL) {
 		evlist &= ~EV_LONG_POLL;
-		/* TODO: Expensive network communication can be done here. */
+		/* Expensive network communication can be done here. */
 		display_node_status();
 		flags |= FL_GAME_LISTEN;
 		initialize_my_gi_common();
@@ -317,9 +315,9 @@ void ktgame_process_flag(void) {
 
 		if (my_gi.listen_period == 0) {
 			flags &= ~FL_GAME_LISTEN;
-			/* TODO: Turn off radio */
+			/* Turn off radio */
 			network_arcv_stop();
-			/* TODO: Evaluate round */
+			/* Evaluate round */
 
 			if (my_gi.button_counter >= FLAG_CONQUER_PERIOD && my_gi.flag_attender != FLAG_HOLDER_NOONE) {
 				my_gi.flag_holder = my_gi.flag_attender;
