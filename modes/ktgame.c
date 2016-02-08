@@ -14,6 +14,7 @@
 #include "magique.h"
 #include "globals.h"
 #include "network.h"
+#include "beep.h"
 
 struct game_info {
 	uint8_t display_mode;
@@ -233,6 +234,11 @@ void ktgame_process(void) {
 				}
 				if (my_info.mana > damage) my_info.mana -= damage;
 				else my_info.mana = 0;
+				if (my_info.mana == 0) {
+					beep(1000, 100, 1000);
+					beep(1000, 100, 1000);
+					beep(1000, 100, 1000);
+				}
 			}
 		} else {
 			my_gi.listen_period--;
