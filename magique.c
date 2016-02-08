@@ -170,7 +170,7 @@ int main() {
 			my_info.mode_adv = 0;
 
 			/* Display the new mode on screen for a short time, and beep */
-			_digits = my_info.mode;
+			_digits = my_info.id;
 			flags |= FL_DISPLAY;
 			countdown = 1000;
 			beep(1000, 5, 0);
