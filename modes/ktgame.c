@@ -222,7 +222,7 @@ void ktgame_process(void) {
 				} else {
 					my_info.mana = MANA_MAX;
 				}
-			} else {
+			} else if (my_info.mana > 0) {
 				uint16_t damage = my_gi.attack / my_gi.defense;
 
 				/* Political knight damages king and knight */
