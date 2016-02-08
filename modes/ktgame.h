@@ -24,7 +24,7 @@
 #define TEAM_RED 0
 #define TEAM_GREEN 1
 
-#define MANA_MAX 0xdd
+#define MANA_MAX 0x32
 #define FLAG_CONQUER_PERIOD 10
 
 #define PLAYER_KING 1

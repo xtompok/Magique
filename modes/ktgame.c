@@ -101,6 +101,15 @@ void initialize_my_gi(void) {
 	initialize_my_gi_common();
 }
 
+void display_score(void) {
+	_digits = my_gi.score;
+	_digits |= DIGIT_DOTL;
+	if (my_gi.score > 0xff) {
+		_digits = my_gi.score >> 4;
+		_digits |= DIGIT_DOTR;
+	}
+}
+
 void display_node_status(void) {
 	switch(my_gi.display_mode) {
 	case DISP_MANA:
@@ -123,13 +132,13 @@ void display_node_status(void) {
 		break;
 		/* Flags */
 	case DISP_RED:
-		_digits = my_gi.score;
+		display_score();
 		if (my_gi.button_counter > 0)
 			_digits = my_gi.button_counter;
 		evlist |= EV_RED_BLINK;
 		break;
 	case DISP_GREEN:
-		_digits = my_gi.score;
+		display_score();
 		if (my_gi.button_counter > 0)
 			_digits = my_gi.button_counter;
 		evlist |= EV_GREEN_BLINK;
@@ -193,7 +202,7 @@ void ktgame_process(void) {
 					my_gi.teammates++;
 				} else {
 					my_gi.attack += pk_in.attack;
-					if (pk_in.node_from & PLAYER_BITS == PLAYER_POLITICAL_KNIGHT) {
+					if ((pk_in.node_from & PLAYER_BITS) == PLAYER_POLITICAL_KNIGHT) {
 						my_gi.political_knight_attack = pk_in.attack;
 					}
 				}
