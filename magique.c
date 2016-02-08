@@ -122,6 +122,8 @@ int main() {
 
 	//delay_ms(1000);
 
+	my_info.vbat = (adc_read(0xb) >> 2);
+
 #if 0
 	if ((adc_read(0xb) >> 2) < 0x8f) {
 		/* Battery is low; Flash with red LED once and power down. */

@@ -19,6 +19,7 @@ struct node {
 	uint8_t mode_adv;
 	uint16_t mana;
 	uint8_t  essences;
+	uint16_t vbat;
 };
 
 #define MODE_KTGAME 1

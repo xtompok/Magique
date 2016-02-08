@@ -8,6 +8,7 @@
  ******************************************************************************/
 
 #include <msp430.h>
+#include "adc.h"
 #include "hardware.h"
 #include "ktgame.h"
 #include "magique.h"
@@ -159,6 +160,7 @@ void ktgame_process(void) {
 	/* Handle long polling (once per second). */
 	if (evlist & EV_LONG_POLL) {
 		evlist &= ~EV_LONG_POLL;
+		my_info.vbat = (adc_read(0xb) >> 2);
 		/* TODO: Expensive network communication can be done here. */
 		/* Initialize game listening period */
 		flags |= FL_GAME_LISTEN;

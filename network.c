@@ -33,6 +33,7 @@ void network_mkpacket(struct packet *p) {
 		a[i] = 0;
 	p->node_from = my_info.id;
 	p->node_to = 0x6666;
+	p->vbat = my_info.vbat;
 }
 
 /* Attempt to send a packet. Waits for ACK if req_ack is non-zero
