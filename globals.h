@@ -10,6 +10,8 @@
 #ifndef __GLOBALS_H__
 #define __GLOBALS_H__
 
+#include <stdint.h>
+
 /* Command flags */
 extern volatile unsigned char flags;
 #define FL_DISPLAY BIT0
@@ -28,6 +30,8 @@ extern volatile unsigned char evlist;
 #define EV_TICK_POLL BIT5
 #define EV_LISTEN BIT6
 
-extern volatile unsigned char _digits;
+extern volatile uint16_t _digits;
+#define DIGIT_DOTL 0x200
+#define DIGIT_DOTR 0x100
 
 #endif

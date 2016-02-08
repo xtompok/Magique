@@ -34,11 +34,13 @@ volatile unsigned int countdown = 0;
 void mplex() {
 	/* Show first digit */
 	show_digit(_digits & 0xf, 0);
+	if (_digits & 0x100) _sr_conf &= ~DOT;
 	sr_update();
 	delay_us(1000);
 
 	/* Show second digit */
 	show_digit((_digits & 0xf0) >> 4, 1);
+	if (_digits & 0x200) _sr_conf &= ~DOT;
 	sr_update();
 	delay_us(1000);
 
