@@ -18,6 +18,7 @@
 #define DISP_DEFAULT 0xff
 
 #define TEAM_BIT 0x20
+#define PLAYER_BITS 0xf
 
 #define FLAG_HOLDER_NOONE 2
 #define TEAM_RED 0
@@ -25,6 +26,14 @@
 
 #define MANA_MAX 0xdd
 #define FLAG_CONQUER_PERIOD 10
+
+#define PLAYER_KING 1
+#define PLAYER_KNIGHT 2
+#define PLAYER_FAT_KNIGHT 3
+#define PLAYER_POLITICAL_KNIGHT 4
+#define POLITICAL_KNIGHT_MASTER_KILL 16
+
+
 
 void ktgame_init(void);
 void ktgame_process(void);

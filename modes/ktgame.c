@@ -19,6 +19,7 @@ struct game_info {
 	uint8_t display_mode;
 	uint8_t listen_period;
 	uint8_t seen[8];
+	uint8_t political_knight_attack;
 	uint16_t attack;
 	uint16_t defense;
 	uint8_t teammates;
@@ -33,30 +34,38 @@ struct game_info {
 struct game_info my_gi;
 
 uint8_t my_attack(void) {
-	switch (my_info.id & 0xf) {
-	case 1: /* Nacelnik TODO: +Pocet spoluhracu - Rado by kral */
+	switch (my_info.id & PLAYER_BITS) {
+	case PLAYER_KING: /* Nacelnik TODO: +Pocet spoluhracu - Rado by kral */
 		return (1 + my_gi.last_teammates) << 2;
-	case 2: /* Strazce vlajky - Rytir*/
+	case PLAYER_KNIGHT: /* Strazce vlajky - Rytir*/
 		return 16;
-	case 3: /* Balvan - Tlusty rytir*/
+	case PLAYER_FAT_KNIGHT: /* Balvan - Tlusty rytir*/
 		return 0;
-	case 4: /* Samotar - Politicky rytir*/
-		return 6;
+	case PLAYER_POLITICAL_KNIGHT: /* Samotar - Politicky rytir*/
+		if (my_gi.last_teammates > 0) {
+			return 0;
+		} else {
+			return 6;
+		}
 	default: /* Pesak */
 		return 8;
 	}
 }
 
 uint8_t my_defence(void) {
-	switch (my_info.id & 0xf) {
-	case 1: /* Nacelnik TODO: +Pocet spoluhracu - Rado by kral */
+	switch (my_info.id & PLAYER_BITS) {
+	case PLAYER_KING: /* Nacelnik TODO: +Pocet spoluhracu - Rado by kral */
 		return 1 + my_gi.last_teammates;
-	case 2: /* Strazce vlajky - Rytir */
+	case PLAYER_KNIGHT: /* Strazce vlajky - Rytir */
 		return 1;
-	case 3: /* Balvan - Tlusty rytir */
+	case PLAYER_FAT_KNIGHT: /* Balvan - Tlusty rytir */
 		return 8;
-	case 4: /* Samotar - Politicky rytir */
-		return 5;
+	case PLAYER_POLITICAL_KNIGHT: /* Samotar - Politicky rytir */
+		if (my_gi.last_teammates > 0) {
+			return 1;
+		} else {
+			return 5;
+		}
 	default: /* Pesak */
 		return 2;
 	}
@@ -88,6 +97,7 @@ void initialize_my_gi(void) {
 	my_gi.attack = 0;
 	my_gi.last_teammates = my_gi.teammates;
 	my_gi.mpm = 0;
+	my_gi.political_knight_attack = 0;
 	initialize_my_gi_common();
 }
 
@@ -183,9 +193,11 @@ void ktgame_process(void) {
 					my_gi.teammates++;
 				} else {
 					my_gi.attack += pk_in.attack;
+					if (pk_in.node_from & PLAYER_BITS == PLAYER_POLITICAL_KNIGHT) {
+						my_gi.political_knight_attack = pk_in.attack;
+					}
 				}
 			}
-
 		}
 
 		if (my_gi.listen_period == 0) {
@@ -202,6 +214,14 @@ void ktgame_process(void) {
 				}
 			} else {
 				uint16_t damage = my_gi.attack / my_gi.defense;
+
+				/* Political knight damages king and knight */
+				if (my_gi.political_knight_attack > 0) {
+					uint8_t myself = my_info.id & PLAYER_BITS;
+					if (myself == PLAYER_KING || myself == PLAYER_KNIGHT) {
+						damage = POLITICAL_KNIGHT_MASTER_KILL;
+					}
+				}
 				if (my_info.mana > damage) my_info.mana -= damage;
 				else my_info.mana = 0;
 			}
