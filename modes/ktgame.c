@@ -34,43 +34,31 @@ struct game_info my_gi;
 
 uint8_t my_attack(void) {
 	switch (my_info.id & 0xf) {
-	case 1: /* Nacelnik TODO: +Pocet spoluhracu */
-		return 1 + my_gi.last_teammates;
-	case 2: /* Strazce vlajky */
-		return 5;
-	case 3: /* Balvan */
-		return 1;
-	case 4: /* Samotar */
-		if (my_gi.last_teammates == 0) {
-			return 5;
-		} else {
-			return 1;
-		}
+	case 1: /* Nacelnik TODO: +Pocet spoluhracu - Rado by kral */
+		return (1 + my_gi.last_teammates) << 2;
+	case 2: /* Strazce vlajky - Rytir*/
+		return 16;
+	case 3: /* Balvan - Tlusty rytir*/
+		return 0;
+	case 4: /* Samotar - Politicky rytir*/
+		return 6;
 	default: /* Pesak */
-		return 1;
+		return 8;
 	}
 }
 
 uint8_t my_defence(void) {
 	switch (my_info.id & 0xf) {
-	case 1: /* Nacelnik TODO: +Pocet spoluhracu */
+	case 1: /* Nacelnik TODO: +Pocet spoluhracu - Rado by kral */
 		return 1 + my_gi.last_teammates;
-	case 2: /* Strazce vlajky */
-		return 0;
-	case 3: /* Balvan */
-		if (my_gi.last_teammates == 0){
-			return 10;
-		} else {
-			return 1;
-		}
-	case 4: /* Samotar */
-		if (my_gi.last_teammates == 0) {
-			return 5;
-		} else {
-			return 1;
-		}
-	default: /* Pesak */
+	case 2: /* Strazce vlajky - Rytir */
 		return 1;
+	case 3: /* Balvan - Tlusty rytir */
+		return 8;
+	case 4: /* Samotar - Politicky rytir */
+		return 5;
+	default: /* Pesak */
+		return 2;
 	}
 }
 
@@ -205,15 +193,15 @@ void ktgame_process(void) {
 			/* TODO: Turn off radio */
 			network_arcv_stop();
 
-			/* TODO: Evaluate round */
+			/* Evaluate round */
 			if (my_gi.mpm > 0) {
 				if (my_info.mana + my_gi.mpm <= MANA_MAX) {
 					my_info.mana += my_gi.mpm;
 				} else {
 					my_info.mana = MANA_MAX;
 				}
-			} else if (my_gi.attack > my_gi.defense) {
-				uint16_t damage = my_gi.attack - my_gi.defense;
+			} else {
+				uint16_t damage = my_gi.attack / my_gi.defense;
 				if (my_info.mana > damage) my_info.mana -= damage;
 				else my_info.mana = 0;
 			}

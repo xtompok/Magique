@@ -30,7 +30,7 @@
 								<option id="com.ti.ccstudio.buildDefinitions.MSP430_4.4.compilerID.DEFINE.1335198534" name="Pre-define NAME (--define, -D)" superClass="com.ti.ccstudio.buildDefinitions.MSP430_4.4.compilerID.DEFINE" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="__MSP430G2352__"/>
 									<listOptionValue builtIn="false" value="NETDEBUG"/>
-									<listOptionValue builtIn="false" value="MY_MODE=4"/>
+									<listOptionValue builtIn="false" value="MY_MODE=1"/>
 									<listOptionValue builtIn="false" value="MY_ID=1"/>
 									<listOptionValue builtIn="false" value="HWDEBUG"/>
 								</option>
