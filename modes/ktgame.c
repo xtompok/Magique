@@ -206,9 +206,9 @@ void ktgame_process(void) {
 					if ((pk_in.node_from & PLAYER_BITS) == PLAYER_POLITICAL_KNIGHT) {
 						my_gi.special_attack |= PLAYER_POLITICAL_KNIGHT;
 					}
-					if (pk_in.node_from & DRAGON_BIT) {
-						my_gi.special_attack |= PLAYER_DRAGON_HELPER;
-					}
+				}
+				if (pk_in.node_from & DRAGON_BIT) {
+					my_gi.special_attack |= PLAYER_DRAGON_HELPER;
 				}
 			}
 		}
