@@ -87,16 +87,20 @@ void ktgame_init(void){
 	my_gi.button_counter = 0;
 }
 
-void initialize_my_gi(void) {
+void initialize_my_gi_common(void) {
 	my_gi.listen_period = 100;
-	my_gi.defense = my_defence();
-	my_gi.attack = 0;
-	my_gi.last_teammates = my_gi.teammates;
 	my_gi.teammates = 0;
-	my_gi.mpm = 0;
 	for (uint8_t i = 0; i < 8; i++) {
 		my_gi.seen[i] = 0;
 	}
+}
+
+void initialize_my_gi(void) {
+	my_gi.defense = my_defence();
+	my_gi.attack = 0;
+	my_gi.last_teammates = my_gi.teammates;
+	my_gi.mpm = 0;
+	initialize_my_gi_common();
 }
 
 void display_node_status(void) {
@@ -121,13 +125,13 @@ void display_node_status(void) {
 		break;
 		/* Flags */
 	case DISP_RED:
-		_digits = my_gi.score >> 4;
+		_digits = my_gi.score;
 		if (my_gi.button_counter > 0)
 			_digits = my_gi.button_counter;
 		evlist |= EV_RED_BLINK;
 		break;
 	case DISP_GREEN:
-		_digits = my_gi.score >> 4;
+		_digits = my_gi.score;
 		if (my_gi.button_counter > 0)
 			_digits = my_gi.button_counter;
 		evlist |= EV_GREEN_BLINK;
@@ -246,15 +250,14 @@ void ktgame_process_flag(void) {
 		evlist &= ~EV_LONG_POLL;
 		/* TODO: Expensive network communication can be done here. */
 		display_node_status();
+		flags |= FL_GAME_LISTEN;
+		initialize_my_gi_common();
+		network_arcv_start();
 
-		my_gi.score++;
 		/* Button pressed checker */
 		if (!(P2IN & BUTTON_PIN)) {
 			/* Initialize game listening period */
-			flags |= FL_GAME_LISTEN;
-			my_gi.listen_period = 100;
 			my_gi.button_counter++;
-			network_arcv_start();
 		} else {
 			my_gi.button_counter = 0;
 		}
@@ -266,9 +269,17 @@ void ktgame_process_flag(void) {
 			evlist |= EV_YELLOW_BLINK;
 #endif
 			uint8_t team = !!(pk_in.node_from & TEAM_BIT);
+			uint8_t _bop_index = pk_in.node_from & 0x7;
+			uint8_t _bop_bit = 1 << ((pk_in.node_from & 0xf8) >> 3);
 			if (team != my_gi.flag_attender) {
-				my_gi.button_counter = 1;
+				my_gi.button_counter = 0;
 				my_gi.flag_attender = team;
+			}
+			if (team == my_gi.flag_holder) {
+				if (!(my_gi.seen[_bop_index] & _bop_bit)) {
+					my_gi.seen[_bop_index] |= _bop_bit;
+					my_gi.teammates++;
+				}
 			}
 		}
 
@@ -288,15 +299,13 @@ void ktgame_process_flag(void) {
 				if (my_gi.flag_holder == TEAM_GREEN) {
 					my_gi.display_mode = DISP_GREEN;
 				}
-				my_gi.score = 1;
+				my_gi.score = 0;
 			}
+
+			if (my_gi.teammates < 2)
+				my_gi.score++;
 		} else {
 			my_gi.listen_period--;
 		}
-	}
-
-	/* Handle button pressed event */
-	if (flags & FL_BUTTON) {
-
 	}
 }
