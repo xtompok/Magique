@@ -2,7 +2,7 @@
  * Filename: ktgame.c
  *
  * Created: 2016/01/24 23:33
- * Author: Ladislav Láska
+ * Authors: Ladislav Laska, Petr Petrous
  * e-mail: laska@kam.mff.cuni.cz
  *
  ******************************************************************************/
@@ -36,7 +36,7 @@ struct game_info my_gi;
 
 uint8_t my_attack(void) {
 	switch (my_info.id & PLAYER_BITS) {
-	case PLAYER_KING: /* Rado by kral */
+	case PLAYER_KING: /* Radoby kral */
 		return (1 + my_gi.last_teammates) << 2;
 	case PLAYER_KNIGHT: /* Rytir*/
 		return 16;
@@ -55,7 +55,7 @@ uint8_t my_attack(void) {
 
 uint8_t my_defence(void) {
 	switch (my_info.id & PLAYER_BITS) {
-	case PLAYER_KING: /* Rado by kral */
+	case PLAYER_KING: /* Radoby kral */
 		return 1 + my_gi.last_teammates;
 	case PLAYER_KNIGHT: /* Rytir */
 		return 1;
