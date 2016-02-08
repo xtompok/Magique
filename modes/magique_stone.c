@@ -12,33 +12,59 @@
 #include "globals.h"
 #include "network.h"
 
-struct magique_info {
-	uint8_t mpm;
-	uint16_t mana;
-};
-
-struct magique_info my_mi = {0, 0};
+uint8_t mpm;
+uint8_t ess;
+uint8_t listen_period;
 
 void magique_stone_process(void) {
-	/* We request source statuses in the long poll */
 	if (evlist & EV_LONG_POLL) {
-		network_init( RF_ROLE_TX );
-		network_mkpacket(&pk_out);
-		if (network_send(&pk_out, 1)) {
-			if (network_rcv(&pk_out, 50)) {
-				my_mi.mpm = pk_out.mpm;
+		/* Blink LEDs if essences are offered */
+		if (ess)
+			evlist |= ess & 0x7;
+		/* Start listening for mana sources */
+		network_arcv_start();
+		ess = mpm = 0;
+		listen_period = 30;
+		flags |= FL_STONE_LISTEN;
+
+	}
+
+	if (flags & FL_STONE_LISTEN) {
+		/* Attempt receiving packet */
+		while (network_arcv(&pk_in)) {
+			/* Remember only last mpm */
+			if (mpm < pk_in.mpm)
+				mpm = pk_in.mpm;
+
+			/* Remember offered essences*/
+			ess |= pk_in.ess;
+
+			/* Handle mode switch here */
+			if (pk_in.mode_adv)
+				my_info.mode_adv = pk_in.mode_adv;
+
+			/* Blink green, as we had received mana */
+			if (mpm)
 				evlist |= EV_GREEN_BLINK;
-			}
-			evlist |= EV_RED_BLINK;
 		}
 
-		my_mi.mana += my_mi.mpm;
-		my_mi.mpm >>= 1;
+		listen_period--;
+		/* If period is over, evaluate mana increase */
+		if (listen_period == 0) {
+			flags &= ~FL_STONE_LISTEN;
+
+			my_info.mana += mpm;
+			network_arcv_stop();
+		}
+	}
+
+	if (flags & FL_BUTTON) {
+		/* TODO: If some essences were offered, take them. */
+
 	}
 
 	if (flags & FL_DISPLAY) {
-		//_digits = my_mi.mpm;
-		_digits = (my_mi.mana >> 8);
+		_digits = my_info.mana;
 	}
 }
 

@@ -170,6 +170,8 @@ void ktgame_process(void) {
 
 	if (flags & FL_GAME_LISTEN) {
 		while (network_arcv(&pk_in)) {
+			if (pk_in.mode_adv)
+				my_info.mode_adv = pk_in.mode_adv;
 #ifdef NETDEBUG
 			evlist |= EV_GREEN_BLINK;
 #endif

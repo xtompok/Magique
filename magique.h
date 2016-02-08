@@ -27,9 +27,9 @@ struct node {
 #define MODE_MAGIQUE_STONE 3
 #define MODE_KTGAME_FLAG 4
 
-#define ESSENCE_RED     (1 << 0)
-#define ESSENCE_YELLOW  (1 << 1)
-#define ESSENCE_GREEN   (1 << 2)
+#define ESSENCE_RED     EV_RED_BLINK
+#define ESSENCE_YELLOW  EV_YELLOW_BLINK
+#define ESSENCE_GREEN   EV_GREEN_BLINK
 
 extern struct node my_info;
 
