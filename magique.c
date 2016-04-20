@@ -171,26 +171,31 @@ int main() {
 		
 		_digits=my_info.units;
 
-		/* Go to sleep mode, if no events are planned and no flags raised */
-		if (!(flags || evlist)) {
-			LPM3;
+		if (my_info.units == 0){
+			sr_led(SR_O_RED,1);	
+			sr_led(SR_O_YELLOW,1);	
+			sr_led(SR_O_GREEN,1);	
+			if (network_arcv(&pk_in) && (pk_in.action == ACTION_SOURCE))
+				my_info.units += pk_in.units;
+			mplex();
 			continue;
-		}	
+		} 
+
 		network_arcv_stop();
 		if (network_arcv(&pk_in)){
 			if (pk_in.action == ACTION_BROADCAST){
 			//	sr_led(SR_O_RED,0);
 				sr_led(SR_O_YELLOW,1);
-				mplex();
-				delay_ms(10);
-				mplex();
+//				mplex();
+//				delay_ms(10);
+//				mplex();
 				cities_process_broadcast();
 			} else {
 				if (pk_in.node_to != my_info.id)
 					break;
-				mplex();
-				delay_ms(10);
-				mplex();
+//				mplex();
+//				delay_ms(10);
+//				mplex();
 				sr_led(SR_O_RED,1);
 				sr_led(SR_O_YELLOW,0);
 				cities_process_action();	

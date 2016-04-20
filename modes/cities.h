@@ -9,6 +9,7 @@ void cities_process_action(void);
 #define ACTION_BROADCAST 1
 #define ACTION_ATTACK 2
 #define ACTION_TRANSFER 3
+#define ACTION_SOURCE 4
 #define ACTION_MASK 0x0F
 #define STAGE_INIT (1<<4)
 #define STAGE_INACK (2<<4)

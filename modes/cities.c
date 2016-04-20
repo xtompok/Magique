@@ -62,15 +62,15 @@ static void attack_process(void){
 	stage = pk_in.action & STAGE_MASK;
 	switch (stage){
 		case STAGE_INIT:
-			respond(id,ACTION_TRANSFER | STAGE_INACK);
+			respond(id,ACTION_ATTACK | STAGE_INACK);
 			break;
 		case STAGE_INACK:
 			my_info.units--;
-			respond(id,ACTION_TRANSFER | STAGE_DO);
+			respond(id,ACTION_ATTACK | STAGE_DO);
 			break;
 		case STAGE_DO:
 			my_info.units--;
-			respond(id,ACTION_TRANSFER | STAGE_DONE);
+			respond(id,ACTION_ATTACK | STAGE_DONE);
 			break;
 		case STAGE_DONE: 	
 			beep(500,10,0);
