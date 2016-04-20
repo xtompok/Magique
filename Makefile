@@ -1,10 +1,14 @@
 
-ifndef MODE
-  MODE=0
+ifndef TEAM
+  TEAM=0
+endif
+
+ifndef TYPE
+  TYPE=1
 endif
 
 ifndef ID
-  ID=0xbeef
+  ID=0xbe
 endif
 
 CC=msp430-gcc
@@ -13,11 +17,11 @@ CPU_BASE=-mmcu=msp430g2553
 MYVAL:=0x11111111
 MYNAME:=0x80
 
-CFLAGS_COMMON=-std=c99 -Os -Wall -g -Ilib -I. -DHWDEBUG=1 -DMY_ID=$(ID) -DMY_MODE=$(MODE)
+CFLAGS_COMMON=-std=c99 -Os -Wall -g -Ilib -I. -DHWDEBUG=1 -DMY_ID=$(ID) -DMY_TEAM=$(TEAM) -DMY_TYPE=$(TYPE) 
 
 # Magique stone build
 CFLAGS_MAGI=$(CFLAGS_COMMON) -mmcu=msp430g2352
-OBJS_MAGI=lib/nrf.o lib/sr.o lib/delay.o lib/segment.o lib/spi.o lib/beep.o globals.o lib/adc.o network.o modes/ktgame.o modes/magique_source.o modes/magique_stone.o
+OBJS_MAGI=lib/nrf.o lib/sr.o lib/delay.o lib/segment.o lib/spi.o lib/beep.o globals.o lib/adc.o network.o modes/cities.o
 
 # Base station build
 CFLAGS_BASE=$(CFLAGS_COMMON) -mmcu=msp430g2553 -DHW_BASE=1

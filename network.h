@@ -16,28 +16,27 @@
 /* Keep it 32B long, as we can provide backward compatibility/multiple packet
  * types later */
 struct packet {
+	/*  1B */
+	uint8_t node_from;
 	/*  2B */
-	uint16_t node_from;
+	uint8_t node_to;	/* Node 0 means broadcast */
 	/*  4B */
-	uint16_t node_to;	/* Node 0 means broadcast */
-	/*  6B */
 	uint16_t vbat;
-	/*  8B */
+	/*  6B */
 	uint16_t vcc;
 
 	/* Game data; 10B */
-	uint8_t attack;
-	uint8_t defense;
+	uint8_t type;
+	uint8_t team;
+	uint8_t units;
+	uint8_t action; 
 
-	/* Stones & sources; 12B */
-	int8_t mpm;	/* Mana per minute, shall only be emitted by the source and can be negative */
-	uint8_t ess; /* Essencess available, shall only be emitted by the source */
-
-	/* Mode switching; 13B */
-	uint8_t mode_adv;
+	/* Cities: last owners; 30B */
+	uint8_t teams[10];
+	uint8_t times[10];
 
 	/* 32B */
-	uint8_t _pad[19];
+	uint8_t _pad[2];
 };
 
 extern struct packet pk_in;

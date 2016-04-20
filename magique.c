@@ -20,9 +20,7 @@
 #include "network.h"
 #include "magique.h"
 
-#include "modes/ktgame.h"
-#include "modes/magique_source.h"
-#include "modes/magique_stone.h"
+#include "modes/cities.h"
 
 volatile unsigned char jiffies = 0;
 
@@ -146,61 +144,62 @@ int main() {
 	_digits = 0;
 
 	/* Set default mode advertisement */
-#if MY_MODE
-	my_info.mode_adv = MY_MODE;
+#if MY_TYPE
+	my_info.type = MY_TYPE;
 #else
-	my_info.mode_adv = MODE_MAGIQUE_SOURCE;
+	my_info.type = TYPE_PLAYER;
 #endif
 
 	my_info.id = MY_ID;
+	my_info.team = MY_TEAM;
+	my_info.units = MY_UNITS;
+	my_info.mode = MODE_ATTACK;
+
+
+	_digits = my_info.id;
+	for (int i=0;i<100;i++){
+		mplex();
+		delay_ms(10);	
+	}
+	
+	cities_init();
 
 	/* Main control loop */
 	unsigned char jiffies_led[3] = {0,0,0};
 	for (;;) {
+		flags |= FL_DISPLAY;
+		
+		_digits=my_info.units;
+
 		/* Go to sleep mode, if no events are planned and no flags raised */
 		if (!(flags || evlist)) {
 			LPM3;
 			continue;
-		}
-
-		/* Handle mode switching. Individual modes still need to recognize the
-		 * need and if willing, set my_id.mode_adv to the appropriate mode. */
-		if (my_info.mode_adv && (my_info.mode_adv != my_info.mode)) {
-			my_info.mode = my_info.mode_adv;
-			my_info.mode_adv = 0;
-
-			/* Display the new mode on screen for a short time, and beep */
-			_digits = my_info.id;
-			flags |= FL_DISPLAY;
-			countdown = 1000;
-			beep(1000, 5, 0);
-
-			/* Done, let's initialize the mode selected. */
-			switch (my_info.mode) {
-				case MODE_KTGAME_FLAG:
-				case MODE_KTGAME:
-					ktgame_init();
+		}	
+		network_arcv_stop();
+		if (network_arcv(&pk_in)){
+			if (pk_in.action == ACTION_BROADCAST){
+			//	sr_led(SR_O_RED,0);
+				sr_led(SR_O_YELLOW,1);
+				mplex();
+				delay_ms(10);
+				mplex();
+				cities_process_broadcast();
+			} else {
+				if (pk_in.node_to != my_info.id)
 					break;
-				default:;
+				mplex();
+				delay_ms(10);
+				mplex();
+				sr_led(SR_O_RED,1);
+				sr_led(SR_O_YELLOW,0);
+				cities_process_action();	
 			}
-		}
+
+		}	
+		network_arcv_start();
 
 		if (evlist & EV_TICK_POLL) {
-			switch (my_info.mode) {
-				case MODE_KTGAME:
-					ktgame_process();
-					break;
-				case MODE_MAGIQUE_SOURCE:
-					magique_source_process();
-					break;
-				case MODE_MAGIQUE_STONE:
-					magique_stone_process();
-					break;
-				case MODE_KTGAME_FLAG:
-					ktgame_process_flag();
-					break;
-				default:;
-			}
 
 			/* Handle LED blinking */
 			if (evlist & EV_RED_BLINK) {
@@ -234,6 +233,8 @@ int main() {
 
 		/* Handle long polling (once per second). */
 		if (evlist & EV_LONG_POLL) {
+			cities_broadcast();
+//			beep(1000, 10, 0);
 		}
 
 		/* All events _should_ have been handled */

@@ -32,7 +32,7 @@ void network_mkpacket(struct packet *p) {
 	for (int i = sizeof(struct packet) - 1; i >= 0; i--)
 		a[i] = 0;
 	p->node_from = my_info.id;
-	p->node_to = 0x6666;
+	p->node_to = 0x66;
 	p->vbat = my_info.vbat;
 }
 

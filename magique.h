@@ -14,18 +14,24 @@
 
 /* Node specific data */
 struct node {
-	uint16_t id;
+	uint8_t type;
+	uint8_t team;
+	uint8_t id;
+	uint8_t units;
 	uint8_t mode;
-	uint8_t mode_adv;
-	uint16_t mana;
-	uint8_t  essences;
 	uint16_t vbat;
 };
 
-#define MODE_KTGAME 1
-#define MODE_MAGIQUE_SOURCE 2
-#define MODE_MAGIQUE_STONE 3
-#define MODE_KTGAME_FLAG 4
+#define TYPE_PLAYER 1
+#define TYPE_CITY 2
+#define TYPE_SOURCE 3
+#define TYPE_BASE 4
+
+#define MODE_ATTACK 1
+#define MODE_DEFENSE 2
+#define MODE_AUTO 3
+
+#define MY_UNITS 128
 
 #define ESSENCE_RED     EV_RED_BLINK
 #define ESSENCE_YELLOW  EV_YELLOW_BLINK
