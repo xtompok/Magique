@@ -28,7 +28,8 @@ void network_init(uint8_t role) {
 }
 
 void network_mkpacket(struct packet *p) {
-	uint8_t *a = (uint8_t *) p;
+	uint8_t *a;
+	a = (uint8_t *) p;
 	for (int i = sizeof(struct packet) - 1; i >= 0; i--)
 		a[i] = 0;
 	p->node_from = my_info.id;
@@ -48,14 +49,16 @@ void network_mkpacket(struct packet *p) {
  * */
 uint8_t network_send(struct packet *p, uint8_t req_ack) {
 	/* TODO: Wake radio from sleep mode */
+	uint8_t status;
+	uint8_t timeout;
 	nrf_nolisten();
 	nrf_settx();
 	nrf_reg_write(NRF_REG_STATUS, MAX_RT | TX_DS, 1);
 	nrf_transmit((unsigned char *) p, sizeof(struct packet));
-	uint8_t status = 0;
+	status = 0;
 	if (req_ack) {
 		/* TODO: timeout should never be reach, it's just to be on the safe side */
-		for (uint8_t timeout = 16; timeout > 0; timeout--) {
+		for (timeout = 16; timeout > 0; timeout--) {
 			status = nrf_reg_read(NRF_REG_STATUS, 1) & (MAX_RT | TX_DS | TX_FULL);
 			if (status) break;
 			delay_us(250); /* 250us is the standard retransmit timeout */
@@ -83,8 +86,9 @@ uint8_t network_send(struct packet *p, uint8_t req_ack) {
  * 		1			success
  */
 uint8_t network_rcv(struct packet *p, uint16_t timeout) {
+	uint8_t result;
 	nrf_setrx();
-	uint8_t result = 0;
+	result = 0;
 	while (timeout && !(result = nrf_receive((unsigned char *) p, sizeof(struct packet)))) {
 		nrf_listen();
 		delay_ms(1);

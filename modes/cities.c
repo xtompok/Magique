@@ -109,9 +109,9 @@ void cities_process_broadcast(void){
 	// My team
 	if (pk_in.team == my_info.team){
 		switch (my_info.mode){
-			case MODE_ATTACK:
+	//		case MODE_ATTACK:
 				// Do nothing
-				break;
+	//			break;
 			case MODE_AUTO:
 				// Don't do anything if oponent has units more or like me
 				if ((pk_in.units < 250) && (pk_in.units + 2 >= my_info.units)){
@@ -133,9 +133,9 @@ void cities_process_broadcast(void){
 			case MODE_ATTACK:
 				attack_start(pk_in.node_from);
 				break;
-			case MODE_DEFENSE:
+	//		case MODE_DEFENSE:
 				// Do nothing
-				break;
+	//			break;
 		}
 	
 	}

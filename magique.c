@@ -191,18 +191,22 @@ int main() {
 //				mplex();
 				cities_process_broadcast();
 			} else {
-				if (pk_in.node_to != my_info.id)
-					break;
-//				mplex();
-//				delay_ms(10);
-//				mplex();
-				sr_led(SR_O_RED,1);
-				sr_led(SR_O_YELLOW,0);
-				cities_process_action();	
+				if (pk_in.node_to == my_info.id){
+	//				mplex();
+	//				delay_ms(10);
+	//				mplex();
+					sr_led(SR_O_RED,1);
+					cities_process_action();
+				}
 			}
+
+			sr_led(SR_O_RED,0);
+			sr_led(SR_O_YELLOW,0);
 
 		}	
 		network_arcv_start();
+
+#if 0
 
 		if (evlist & EV_TICK_POLL) {
 
@@ -231,6 +235,7 @@ int main() {
 				}
 			}
 		}
+#endif 
 
 		/* Handle short polling (16 times per second). */
 		if (evlist & EV_SHORT_POLL) {
@@ -249,6 +254,7 @@ int main() {
 			mplex();
 		else
 			sr_update();
+		delay_ms(1);
 	}
 
 }
