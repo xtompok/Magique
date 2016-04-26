@@ -86,7 +86,10 @@ int nrf_receive(unsigned char *data, unsigned char len) {
 	_nrf_status = spi_xfer_byte(NRF_CMD_NOP);
 	nrf_csh();
 
-	if (!(_nrf_status & RX_DR)) return 0;
+	unsigned char fifo;
+	fifo = nrf_reg_read(NRF_REG_FIFO_STATUS,1);
+
+	if (!(_nrf_status & RX_DR) && (fifo & FIFO_RX_EMPTY)) return 0;
 
 	/* Clear RX_DR, this is actually done by writing RX_DR */
 	nrf_reg_write(NRF_REG_STATUS, RX_DR, 1);

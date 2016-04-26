@@ -29,21 +29,22 @@ static void transfer_process(void){
 	uint8_t stage;
 	uint8_t id;
 	id = pk_in.node_from;
-	stage = pk_in.action >> STAGE_SHIFT;
+	stage = pk_in.action & STAGE_MASK;
 	switch (stage){
 		case STAGE_INIT:
 			respond(id,ACTION_TRANSFER | STAGE_INACK);
 			break;
 		case STAGE_INACK:
+			beep(500,10,0);
 			my_info.units--;
 			respond(id,ACTION_TRANSFER | STAGE_DO);
 			break;
 		case STAGE_DO:
+			beep(500,10,0);
 			my_info.units++;
 			respond(id,ACTION_TRANSFER | STAGE_DONE);
 			break;
 		case STAGE_DONE: 	
-			beep(500,10,0);
 			succesfull++; 
 			break;
 	}
@@ -55,7 +56,6 @@ static void attack_start(uint8_t id){
 }
 
 static void attack_process(void){
-	beep(500,10,0);
 	uint8_t stage;
 	uint8_t id;
 	id = pk_in.node_from;
@@ -65,15 +65,16 @@ static void attack_process(void){
 			respond(id,ACTION_ATTACK | STAGE_INACK);
 			break;
 		case STAGE_INACK:
+			beep(500,10,0);
 			my_info.units--;
 			respond(id,ACTION_ATTACK | STAGE_DO);
 			break;
 		case STAGE_DO:
+			beep(500,10,0);
 			my_info.units--;
 			respond(id,ACTION_ATTACK | STAGE_DONE);
 			break;
 		case STAGE_DONE: 	
-			beep(500,10,0);
 			succesfull++; 
 			break;
 	}
@@ -108,6 +109,7 @@ void cities_process_broadcast(void){
 	//beep(1000,10,0);
 	// My team
 	if (pk_in.team == my_info.team){
+	//	beep(500,10,0);
 		switch (my_info.mode){
 	//		case MODE_ATTACK:
 				// Do nothing

@@ -180,30 +180,51 @@ int main() {
 			mplex();
 			continue;
 		} 
+		if (flags & FL_BUTTON){
+			beep(1000,10,0);
+			switch (my_info.mode){
+				case MODE_ATTACK:
+					my_info.mode = MODE_AUTO;	 
+					break;
+				case MODE_AUTO:
+					my_info.mode = MODE_DEFENSE;	 
+					break;
+				case MODE_DEFENSE:
+					my_info.mode = MODE_ATTACK;	 
+					break;
+			}	
+			flags &= ~FL_BUTTON;
+		}
+
+		switch (my_info.mode){
+			case MODE_ATTACK:
+				sr_led(SR_O_RED,1);
+				sr_led(SR_O_YELLOW,0);
+				sr_led(SR_O_GREEN,0);
+				break;	
+			case MODE_DEFENSE:
+				sr_led(SR_O_RED,0);
+				sr_led(SR_O_YELLOW,0);
+				sr_led(SR_O_GREEN,1);
+				break;	
+			case MODE_AUTO:
+				sr_led(SR_O_RED,0);
+				sr_led(SR_O_YELLOW,1);
+				sr_led(SR_O_GREEN,0);
+				break;	
+		}
 
 		network_arcv_stop();
-		if (network_arcv(&pk_in)){
+		while (network_arcv(&pk_in)){
 			if (pk_in.action == ACTION_BROADCAST){
-			//	sr_led(SR_O_RED,0);
 				sr_led(SR_O_YELLOW,1);
-//				mplex();
-//				delay_ms(10);
-//				mplex();
 				cities_process_broadcast();
 			} else {
 				if (pk_in.node_to == my_info.id){
-	//				mplex();
-	//				delay_ms(10);
-	//				mplex();
-					sr_led(SR_O_RED,1);
 					cities_process_action();
 				}
 			}
-
-			sr_led(SR_O_RED,0);
-			sr_led(SR_O_YELLOW,0);
-
-		}	
+		}
 		network_arcv_start();
 
 #if 0
@@ -254,7 +275,7 @@ int main() {
 			mplex();
 		else
 			sr_update();
-		delay_ms(1);
+		delay_ms(10);
 	}
 
 }

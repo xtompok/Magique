@@ -92,6 +92,14 @@ extern unsigned char _nrf_status;
 #define RF_PWR0 BIT1
 #define LNA_HCURR BIT0
 
+/* FIFO_STATUS register */
+#define NRF_REG_FIFO_STATUS	0x17
+#define FIFO_TX_REUSE	BIT6
+#define FIFO_TX_FULL	BIT5
+#define FIFO_TX_EMPTY	BIT4
+#define FIFO_RX_FULL	BIT1
+#define FIFO_RX_EMPTY	BIT0
+
 #define nrf_setrx() _nrf_setrx(1)
 #define nrf_settx() _nrf_setrx(0)
 
