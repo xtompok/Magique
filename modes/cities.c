@@ -1,6 +1,4 @@
-#include <msp430.h>
 #include "magique.h"
-#include "globals.h"
 #include "network.h"
 #include "delay.h"
 #include "cities.h"
@@ -16,16 +14,18 @@ inline void respond(uint8_t id,uint8_t action){
 	pk_out.action = action;
 	pk_out.node_to = id;
 	network_arcv_stop();
+	delay_us(100);
 	network_send(&pk_out,0);
+	delay_us(100);
 	network_arcv_start();
 		
 }
 
 
-static void transfer_start(uint8_t id){
+void transfer_start(uint8_t id){
 	respond(id,ACTION_TRANSFER | STAGE_INIT);
 }
-static void transfer_process(void){
+void transfer_process(void){
 	uint8_t stage;
 	uint8_t id;
 	id = pk_in.node_from;
@@ -35,13 +35,15 @@ static void transfer_process(void){
 			respond(id,ACTION_TRANSFER | STAGE_INACK);
 			break;
 		case STAGE_INACK:
-			beep(500,10,0);
+	//		beep(500,10,0);
 			my_info.units--;
 			respond(id,ACTION_TRANSFER | STAGE_DO);
 			break;
 		case STAGE_DO:
-			beep(500,10,0);
-			my_info.units++;
+	//		beep(500,10,0);
+			if (my_info.units < 255){
+				my_info.units++;
+			}
 			respond(id,ACTION_TRANSFER | STAGE_DONE);
 			break;
 		case STAGE_DONE: 	
@@ -50,6 +52,50 @@ static void transfer_process(void){
 	}
 	
 }
+
+static void city_attack_process(void){
+	uint8_t stage;
+	uint8_t id;
+	id = pk_in.node_from;
+	stage = pk_in.action & STAGE_MASK;
+	switch (stage){
+		case STAGE_INIT:
+			respond(id,ACTION_ATTACK | STAGE_INACK);
+			break;
+		case STAGE_INACK:
+			my_info.units--;
+			respond(id,ACTION_ATTACK | STAGE_DO);
+			break;
+		case STAGE_DO:
+			if (my_info.units >= 1){
+				my_info.units--;
+			} else {
+				my_info.uplevel = 0;
+				my_info.team = pk_in.team;
+			}
+			respond(id,ACTION_ATTACK | STAGE_DONE);
+			break;
+		case STAGE_DONE: 	
+			succesfull++; 
+			break;
+	}
+}
+
+void cities_city_process_action(void){
+	uint8_t action;
+	uint8_t stage;
+	action = pk_in.action & ACTION_MASK;
+	stage = pk_in.action & STAGE_MASK;
+	switch (action){
+		case ACTION_TRANSFER:
+			transfer_process();
+			break;
+		case ACTION_ATTACK:
+			city_attack_process();
+			break;
+	}
+}
+
 
 static void attack_start(uint8_t id){
 	respond(id,ACTION_ATTACK | STAGE_INIT);
@@ -65,12 +111,12 @@ static void attack_process(void){
 			respond(id,ACTION_ATTACK | STAGE_INACK);
 			break;
 		case STAGE_INACK:
-			beep(500,10,0);
+//			beep(500,10,0);
 			my_info.units--;
 			respond(id,ACTION_ATTACK | STAGE_DO);
 			break;
 		case STAGE_DO:
-			beep(500,10,0);
+//			beep(500,10,0);
 			my_info.units--;
 			respond(id,ACTION_ATTACK | STAGE_DONE);
 			break;
@@ -94,14 +140,16 @@ void cities_broadcast(void){
 	pk_out.node_to = 0;
 	pk_out.action = ACTION_BROADCAST;
 	pk_out.units = my_info.units;
-	if (my_info.type == TYPE_CITY){
+/*	if (my_info.type == TYPE_CITY){
 		for (i=0;i<10;i++){
 			pk_out.teams[i]=teams[i];
 			pk_out.times[i]=times[i];	
 		}
-	}
+	}*/
 	network_arcv_stop();
+	delay_us(100);
 	network_send(&pk_out,0);
+	delay_us(100);
 	network_arcv_start();
 }
 

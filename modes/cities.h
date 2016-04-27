@@ -5,6 +5,9 @@ void cities_init(void);
 void cities_broadcast(void);
 void cities_process_broadcast(void);
 void cities_process_action(void);
+void transfer_start(uint8_t id);
+void transfer_process(void);
+void cities_city_process_action(void);
 
 #define ACTION_BROADCAST 1
 #define ACTION_ATTACK 2
@@ -19,5 +22,11 @@ void cities_process_action(void);
 #define STAGE_MASK 0xF0
 
 #define AUTO_ATTACK_TRESHOLD 20
+#define SOURCE_UNITS 5
+#define MY_UNITS 128
+#define CITY_UNITS 20
+#define CITY_MAXUNITS 100
+#define CITY_MAXLEVEL 5
+#define CITY_LEVEL_UP 25
 
 #endif

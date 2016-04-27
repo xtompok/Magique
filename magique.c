@@ -175,9 +175,12 @@ int main() {
 			sr_led(SR_O_RED,1);	
 			sr_led(SR_O_YELLOW,1);	
 			sr_led(SR_O_GREEN,1);	
+			network_arcv_stop();
 			if (network_arcv(&pk_in) && (pk_in.action == ACTION_SOURCE))
 				my_info.units += pk_in.units;
 			mplex();
+			network_arcv_start();
+			delay_ms(10);
 			continue;
 		} 
 		if (flags & FL_BUTTON){
@@ -216,6 +219,9 @@ int main() {
 
 		network_arcv_stop();
 		while (network_arcv(&pk_in)){
+			if (my_info.units == 0){
+				break;	
+			}
 			if (pk_in.action == ACTION_BROADCAST){
 				sr_led(SR_O_YELLOW,1);
 				cities_process_broadcast();

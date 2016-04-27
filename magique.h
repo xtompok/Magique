@@ -19,6 +19,8 @@ struct node {
 	uint8_t id;
 	uint8_t units;
 	uint8_t mode;
+	uint8_t level;
+	uint8_t uplevel;
 	uint16_t vbat;
 };
 
@@ -27,11 +29,12 @@ struct node {
 #define TYPE_SOURCE 3
 #define TYPE_BASE 4
 
+#define NO_TEAM 0xFF
+
 #define MODE_ATTACK 1
 #define MODE_DEFENSE 2
 #define MODE_AUTO 3
 
-#define MY_UNITS 128
 
 #define ESSENCE_RED     EV_RED_BLINK
 #define ESSENCE_YELLOW  EV_YELLOW_BLINK
